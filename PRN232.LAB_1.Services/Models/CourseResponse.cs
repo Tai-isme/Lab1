@@ -10,4 +10,6 @@ public class CourseResponse
     public string Room { get; set; } = string.Empty;
     public int MaxStudents { get; set; }
     public string Schedule { get; set; } = string.Empty;
+    public SubjectResponse? Subject { get; set; }
+    public SemesterResponse? Semester { get; set; }
 }

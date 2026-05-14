@@ -72,6 +72,11 @@ public static class SubjectMapper
         };
     }
 
+    public static SubjectResponse ToResponseDto(this Subject entity, string[] expand)
+    {
+        return entity.ToResponseDto(); // Subject has no forward nav to expand
+    }
+
     public static List<SubjectResponse> ToResponseDtoList(this IEnumerable<Subject> entities)
     {
         return entities.Select(e => e.ToResponseDto()).ToList();

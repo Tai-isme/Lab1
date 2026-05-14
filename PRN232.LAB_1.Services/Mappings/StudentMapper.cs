@@ -84,6 +84,11 @@ public static class StudentMapper
         };
     }
 
+    public static StudentResponse ToResponseDto(this Student entity, string[] expand)
+    {
+        return entity.ToResponseDto(); // Student has no forward nav to expand
+    }
+
     public static List<StudentResponse> ToResponseDtoList(this IEnumerable<Student> entities)
     {
         return entities.Select(e => e.ToResponseDto()).ToList();

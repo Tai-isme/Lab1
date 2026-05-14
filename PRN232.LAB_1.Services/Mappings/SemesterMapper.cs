@@ -78,6 +78,11 @@ public static class SemesterMapper
         };
     }
 
+    public static SemesterResponse ToResponseDto(this Semester entity, string[] expand)
+    {
+        return entity.ToResponseDto(); // Semester has no forward nav to expand
+    }
+
     public static List<SemesterResponse> ToResponseDtoList(this IEnumerable<Semester> entities)
     {
         return entities.Select(e => e.ToResponseDto()).ToList();

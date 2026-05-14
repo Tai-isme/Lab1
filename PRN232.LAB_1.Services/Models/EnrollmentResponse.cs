@@ -8,4 +8,6 @@ public class EnrollmentResponse
     public DateTime EnrollmentDate { get; set; }
     public string Status { get; set; } = string.Empty;
     public string? Grade { get; set; }
+    public StudentResponse? Student { get; set; }
+    public CourseResponse? Course { get; set; }
 }

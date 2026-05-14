@@ -79,6 +79,21 @@ public static class EnrollmentMapper
         };
     }
 
+    public static EnrollmentResponse ToResponseDto(this Enrollment entity, string[] expand)
+    {
+        var dto = entity.ToResponseDto();
+        if (expand.Contains("student") && entity.Student != null)
+            dto.Student = entity.Student.ToResponseDto();
+        if (expand.Contains("course") && entity.Course != null)
+            dto.Course = entity.Course.ToResponseDto();
+        return dto;
+    }
+
+    public static List<EnrollmentResponse> ToResponseDtoList(this IEnumerable<Enrollment> entities, string[] expand)
+    {
+        return entities.Select(e => e.ToResponseDto(expand)).ToList();
+    }
+
     public static List<EnrollmentResponse> ToResponseDtoList(this IEnumerable<Enrollment> entities)
     {
         return entities.Select(e => e.ToResponseDto()).ToList();

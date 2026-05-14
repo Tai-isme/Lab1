@@ -92,6 +92,21 @@ public static class CourseMapper
         };
     }
 
+    public static CourseResponse ToResponseDto(this Course entity, string[] expand)
+    {
+        var dto = entity.ToResponseDto();
+        if (expand.Contains("subject") && entity.Subject != null)
+            dto.Subject = entity.Subject.ToResponseDto();
+        if (expand.Contains("semester") && entity.Semester != null)
+            dto.Semester = entity.Semester.ToResponseDto();
+        return dto;
+    }
+
+    public static List<CourseResponse> ToResponseDtoList(this IEnumerable<Course> entities, string[] expand)
+    {
+        return entities.Select(e => e.ToResponseDto(expand)).ToList();
+    }
+
     public static List<CourseResponse> ToResponseDtoList(this IEnumerable<Course> entities)
     {
         return entities.Select(e => e.ToResponseDto()).ToList();
