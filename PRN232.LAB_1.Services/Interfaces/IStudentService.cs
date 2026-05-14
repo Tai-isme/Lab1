@@ -5,6 +5,7 @@ namespace PRN232.LAB_1.Services.Interfaces;
 public interface IStudentService
 {
     Task<List<StudentResponse>> GetAllAsync();
+    Task<PagedResult<StudentResponse>> GetAllAsync(PagedQuery query);
     Task<StudentResponse?> GetByIdAsync(int id);
     Task<StudentResponse> AddAsync(StudentRequest request);
     Task<StudentResponse?> UpdateAsync(int id, StudentRequest request);
