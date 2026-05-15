@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed Phase 2 Plan 01 — models, DTOs, mappers, interfaces
-last_updated: "2026-05-14T10:14:54Z"
-last_activity: 2026-05-14 -- Phase 2 Plan 01 executed
+status: completed
+stopped_at: Phase 4 ready to plan
+last_updated: "2026-05-14T04:25:00.000Z"
+last_activity: 2026-05-14 -- Phase 03 execution completed
 progress:
   total_phases: 4
-  completed_phases: 1
-  total_plans: 4
-  completed_plans: 2
-  percent: 50
+  completed_phases: 3
+  total_plans: 6
+  completed_plans: 6
+  percent: 100
 ---
 
 # Project State
@@ -21,33 +21,33 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-14)
 
 **Core value:** All LMS resources (semesters, courses, subjects, students, enrollments) can be CRUD-managed via RESTful endpoints with search, sort, paging, field selection, and expansion — meeting the lab evaluation checklist.
-**Current focus:** Phase 02 — business-logic-services-layer
+**Current focus:** Phase 04 — Docker Deployment
 
 ## Current Position
 
-Phase: 02 (business-logic-services-layer) — EXECUTING
-Plan: 1 of 2 (completed)
-Status: Ready for Plan 02-02 (service implementations)
-Last activity: 2026-05-14 -- Phase 2 Plan 01 completed
+Phase: 03 (api-full-restful-controllers) — COMPLETE
+Plan: 3 of 3 (completed)
+Status: Phase 3 complete — ready for Phase 4 (Docker Deployment)
+Last activity: 2026-05-14 -- Phase 03 execution completed
 
-Progress: [########            ] 33%
+Progress: [####################] 100%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 1
-- Average duration: N/A
-- Total execution time: 0.0 hours
+- Total plans completed: 6
+- Average duration: ~1 min
+- Total execution time: ~8 min
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. Foundation | TBD | — | — |
-| 2. Business Logic | TBD | — | — |
-| 3. API | TBD | — | — |
-| 4. Deployment | TBD | — | — |
+| 1. Foundation | 2 | 2 | ~1 min |
+| 2. Business Logic | 1 | 1 | ~1 min |
+| 3. API | 3 | 3 | ~2 min |
+| 4. Deployment | 0 | 0 | — |
 
 *Updated after each plan completion*
 
@@ -73,17 +73,20 @@ Recent decisions affecting current work:
 - [Phase 2]: Static mapper classes per entity for manual model mapping
 - [Phase 2]: Rewire API DI to go through Services layer in this phase
 - [Phase 2]: Basic data annotations ([Required], [StringLength], [Range]) on Request DTOs
+- [Phase 2]: Service implementations inject IRepository<T> and use static mapper classes
+- [Phase 2]: DependencyInjection.cs with AddApplicationServices — all service + repository registrations centralized
+- [Phase 2]: API Program.cs uses AddApplicationServices(), removes direct repository references
 
 ### Pending Todos
 
-None yet.
+None — Phase 2 complete.
+
+## Session Continuity
+
+Last session: 2026-05-14T03:52:47.360Z
+Stopped at: Phase 3 context gathered
+Resume file: .planning/phases/03-api-full-restful-controllers/03-CONTEXT.md
 
 ### Blockers/Concerns
 
 None yet.
-
-## Session Continuity
-
-Last session: 2026-05-14
-Stopped at: Phase 2 context gathered — ready for planning
-Resume file: .planning/phases/02-business-logic-services-layer/02-CONTEXT.md

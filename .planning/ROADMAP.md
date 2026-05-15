@@ -7,8 +7,8 @@ A 3-layer ASP.NET Core 8 REST API for Learning Management System (LMS) academic 
 ## Phases
 
 - [x] **Phase 1: Foundation** — Fix scaffold, build data layer with entities, DbContext, and repositories
-- [ ] **Phase 2: Business Logic** — Build service layer with domain models, DTOs, and model mapping
-- [ ] **Phase 3: API** — Implement full RESTful controllers with CRUD and collection features
+- [x] **Phase 2: Business Logic** — Build service layer with domain models, DTOs, and model mapping
+- [x] **Phase 3: API** — Implement full RESTful controllers with CRUD and collection features
 - [ ] **Phase 4: Deployment** — Containerize with Docker Compose and seed production-quality data
 
 ## Phase Details
@@ -38,7 +38,7 @@ A 3-layer ASP.NET Core 8 REST API for Learning Management System (LMS) academic 
   5. Model mapping layer converts cleanly between entity ↔ business ↔ request ↔ response types (manual mapping, no AutoMapper)
 **Plans**: 2 plans
 - [x] 02-01-PLAN.md — Create Business models, Request/Response DTOs, mapper classes, and service interfaces (SVC-01, SVC-02, SVC-03, SVC-04, SVC-06)
-- [ ] 02-02-PLAN.md — Implement service classes, DI extension, and updated API wiring (SVC-05, D-04)
+- [x] 02-02-PLAN.md — Implement service classes, DI extension, and updated API wiring (SVC-05, D-04)
 
 ### Phase 3: API — Full RESTful Controllers
 **Goal**: All 5 RESTful controllers with full CRUD, consistent response envelope, proper HTTP status codes, Swagger docs, and advanced collection features (search, sort, paging, field selection, expansion)
@@ -50,25 +50,63 @@ A 3-layer ASP.NET Core 8 REST API for Learning Management System (LMS) academic 
   3. All responses use consistent envelope `{success, message, data, errors}` with proper HTTP status codes (200, 201, 400, 404, 500)
   4. GET collection supports all query features: `?search=keyword`, `?sort=field,-field`, `?page=1&size=20`, `?fields=id,name,email`, `?expand=student,course`; pagination metadata returned as `{page, pageSize, totalItems, totalPages}`
   5. Swagger UI lists all endpoints with request/response schemas and HTTP status code documentation
-**Plans**: TBD
+**Plans**: 3 plans
+- [x] 03-01-PLAN.md — API Infrastructure: ApiResponse, ResponseEnvelopeFilter, PagedQuery, Swagger XML docs (API-09, API-10, API-14, API-17)
+- [x] 03-02-PLAN.md — Service Extensions: GetQueryable, PagedResult, service query overloads, expand support (API-07, API-11, API-12, API-13, API-15, API-16)
+- [x] 03-03-PLAN.md — All 5 Controllers: RESTful CRUD with search, sort, paging, expand, field selection (API-01, API-02, API-03, API-04, API-05, API-06, API-08)
 
 ### Phase 4: Deployment — Docker & Seed Data
-**Goal**: Fully containerized application running via Docker Compose (SQL Server + API) with 500+ realistic seed records using batched `UseSeeding()`
+**Goal**: Fully containerized application running via Docker Compose (SQL Server + API) with 500+ realistic seed records using a separate DataSeeder class
 **Depends on**: Phase 3
 **Requirements**: DAT-07, DCK-01, DCK-02, DCK-03, DCK-04
 **Success Criteria** (what must be TRUE):
-  1. Multi-stage Dockerfile builds the API project efficiently (SDK build → runtime publish)
-  2. `docker-compose.yml` orchestrates SQL Server (`mcr.microsoft.com/mssql/server:2022-latest`) and API services with correct networking (service name as hostname)
-  3. SQL Server healthcheck ensures API container waits for DB readiness before starting
-  4. Both API and database containers start successfully via `docker-compose up`; API responds to requests on configured port
-  5. Application starts with 500+ seed records: 5+ semesters, 50+ students, 10+ subjects, 20+ courses, 500+ enrollments (via `UseSeeding()` with batched inserts)
-**Plans**: TBD
+  1. Multi-stage Dockerfile builds the API project efficiently (SDK build → runtime publish) and exposes port 80
+  2. `docker-compose.yml` orchestrates SQL Server (`mcr.microsoft.com/mssql/server:2022-latest`) and API services with env var connection string using service name (sqlserver) as hostname
+  3. API container retries DB connection with exponential backoff (no Docker HEALTHCHECK — retry in Program.cs)
+  4. Both API and database containers start successfully via `docker-compose up`; API responds on http://localhost:5000
+  5. Application seeds 500+ records on first startup: 5+ semesters, 10+ subjects, 50+ students, 20+ courses, 500+ enrollments (via DataSeeder class with nested loops, single transaction, idempotent check)
+**Plans**: 1 plan
+- [ ] 04-01-PLAN.md — DataSeeder.cs, Program.cs (retry + seed + HTTPS guard), Dockerfile, docker-compose.yml, .dockerignore (DAT-07, DCK-01, DCK-02, DCK-03, DCK-04)
 
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 1/1 | Complete | 2026-05-14 |
-| 2. Business Logic | 1/2 | In Progress | - |
-| 3. API | 0/0 | Not started | - |
-| 4. Deployment | 0/0 | Not started | - |
+| 2. Business Logic | 2/2 | Complete | 2026-05-14 |
+| 3. API | 3/3 | Complete | 2026-05-14 |
+| 4. Deployment | 0/1 | Planned | - |
+| 5. Business Model Fix | 0/2 | Planned | - |
+
+### Phase 5: Fix project chưa đúng theo yêu cầu Business models được sử dụng đúng mục đích
+
+**Goal:** Refactor all services to use Business models as internal domain representation (Entity → Business → Response flow)
+**Requirements**: SVC-05, SVC-06
+**Depends on:** Phase 4
+**Plans:** 2 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — Add Business → Response mapping methods to all 5 entity mappers
+- [ ] 05-02-PLAN.md — Refactor all 5 services to use Entity → Business → Response chain
+
+### Phase 6: Fix the fail rule
+
+**Goal:** GetByIdAsync returns complete related data with expand support across all 5 entities
+**Requirements**: API-07
+**Depends on:** Phase 5
+**Plans:** 2 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — Repository layer: expand-aware GetByIdAsync with EF Core Include() support (API-07)
+- [ ] 06-02-PLAN.md — Services + Controllers: wire expand parameter through all 5 entities (API-07)
+
+### Phase 7: Fix the missing/gaps/issues to match the requirement 5. GET Collection Resource (List API)
+
+**Goal:** All 5 List APIs support multi-field sort (`?sort=field,-field`), field selection (`?fields=x,y,z`), and expand (`?expand=related`) in GET collection endpoints
+**Requirements**: API-12, API-14, API-15
+**Depends on:** Phase 6
+**Plans:** 2 plans
+
+Plans:
+- [ ] 07-01-PLAN.md — Replace SortBy+SortDesc with Sort in PagedQuery; create QueryableExtensions helper (ApplyMultiFieldSort, ApplyFieldSelection)
+- [ ] 07-02-PLAN.md — Refactor all 5 services to use shared query helpers, add field selection, add expand support where missing
