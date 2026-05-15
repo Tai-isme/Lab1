@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PRN232.LAB_1.Repositories.Entities;
 using PRN232.LAB_1.Repositories.Repositories;
+using PRN232.LAB_1.Services.Helpers;
 using PRN232.LAB_1.Services.Interfaces;
 using PRN232.LAB_1.Services.Mappings;
 using PRN232.LAB_1.Services.Models;
@@ -19,13 +20,14 @@ public class StudentService : IStudentService
     public async Task<List<StudentResponse>> GetAllAsync()
     {
         var entities = await _repository.GetAllAsync();
-        return entities.ToResponseDtoList();
+        return entities.Select(e => e.ToBusinessModel()).ToResponseDtoList();
     }
 
     public async Task<PagedResult<StudentResponse>> GetAllAsync(PagedQuery query)
     {
         var q = _repository.GetQueryable();
 
+        // Search
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
             var s = query.Search.ToLower();
@@ -36,32 +38,45 @@ public class StudentService : IStudentService
                            || e.Address.ToLower().Contains(s));
         }
 
-        if (!string.IsNullOrWhiteSpace(query.SortBy))
+        // Expand — per D-03
+        if (!string.IsNullOrWhiteSpace(query.Expand))
         {
-            q = query.SortBy.ToLower() switch
-            {
-                "code" => query.SortDesc ? q.OrderByDescending(e => e.Code) : q.OrderBy(e => e.Code),
-                "fullname" => query.SortDesc ? q.OrderByDescending(e => e.FullName) : q.OrderBy(e => e.FullName),
-                "email" => query.SortDesc ? q.OrderByDescending(e => e.Email) : q.OrderBy(e => e.Email),
-                _ => q.OrderBy(e => e.Id)
-            };
-        }
-        else
-        {
-            q = q.OrderBy(e => e.Id);
+            var expand = query.Expand.Split(',', StringSplitOptions.TrimEntries);
+            if (expand.Contains("enrollments"))
+                q = q.Include(e => e.Enrollments);
         }
 
-        var totalItems = await q.CountAsync();
+        // Sort — per D-01
+        var sortFields = new Dictionary<string, (Func<IQueryable<Student>, IOrderedQueryable<Student>> asc, Func<IQueryable<Student>, IOrderedQueryable<Student>> desc)>
+        {
+            { "id", (q => q.OrderBy(e => e.Id), q => q.OrderByDescending(e => e.Id)) },
+            { "code", (q => q.OrderBy(e => e.Code), q => q.OrderByDescending(e => e.Code)) },
+            { "fullname", (q => q.OrderBy(e => e.FullName), q => q.OrderByDescending(e => e.FullName)) },
+            { "email", (q => q.OrderBy(e => e.Email), q => q.OrderByDescending(e => e.Email)) },
+        };
+        var ordered = q.ApplyMultiFieldSort(query.Sort, sortFields);
+
+        // Count
+        var totalItems = await ordered.CountAsync();
+
+        // Page
         var page = Math.Max(1, query.Page);
         var pageSize = Math.Clamp(query.PageSize, 1, 100);
-        var entities = await q
+        var entities = await ordered
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
 
+        // Map and apply field selection — per D-02
+        var items = entities
+            .Select(e => e.ToBusinessModel())
+            .ToResponseDtoList()
+            .ApplyFieldSelection(query.Fields)
+            .ToList();
+
         return new PagedResult<StudentResponse>
         {
-            Items = entities.ToResponseDtoList(),
+            Items = items,
             Page = page,
             PageSize = pageSize,
             TotalItems = totalItems,
@@ -72,14 +87,23 @@ public class StudentService : IStudentService
     public async Task<StudentResponse?> GetByIdAsync(int id)
     {
         var entity = await _repository.GetByIdAsync(id);
-        return entity?.ToResponseDto();
+        return entity?.ToBusinessModel().ToResponseDto();
+    }
+
+    public async Task<StudentResponse?> GetByIdAsync(int id, string? expand)
+    {
+        var includes = !string.IsNullOrWhiteSpace(expand)
+            ? expand.Split(',', StringSplitOptions.TrimEntries)
+            : null;
+        var entity = await _repository.GetByIdAsync(id, includes);
+        return entity?.ToBusinessModel().ToResponseDto();
     }
 
     public async Task<StudentResponse> AddAsync(StudentRequest request)
     {
         var entity = request.ToEntity();
         var created = await _repository.AddAsync(entity);
-        return created.ToResponseDto();
+        return created.ToBusinessModel().ToResponseDto();
     }
 
     public async Task<StudentResponse?> UpdateAsync(int id, StudentRequest request)
@@ -89,7 +113,7 @@ public class StudentService : IStudentService
 
         request.UpdateEntity(entity);
         await _repository.UpdateAsync(entity);
-        return entity.ToResponseDto();
+        return entity.ToBusinessModel().ToResponseDto();
     }
 
     public async Task<bool> DeleteAsync(int id)

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PRN232.LAB_1.Repositories.Entities;
 using PRN232.LAB_1.Repositories.Repositories;
+using PRN232.LAB_1.Services.Helpers;
 using PRN232.LAB_1.Services.Interfaces;
 using PRN232.LAB_1.Services.Mappings;
 using PRN232.LAB_1.Services.Models;
@@ -19,7 +20,7 @@ public class CourseService : ICourseService
     public async Task<List<CourseResponse>> GetAllAsync()
     {
         var entities = await _repository.GetAllAsync();
-        return entities.ToResponseDtoList();
+        return entities.Select(e => e.ToBusinessModel()).ToResponseDtoList();
     }
 
     public async Task<PagedResult<CourseResponse>> GetAllAsync(PagedQuery query)
@@ -36,7 +37,7 @@ public class CourseService : ICourseService
                            || e.Schedule.ToLower().Contains(s));
         }
 
-        // Expand — apply Include before ordering
+        // Expand — apply Include before ordering (per D-03)
         if (!string.IsNullOrWhiteSpace(query.Expand))
         {
             var expand = query.Expand.Split(',', StringSplitOptions.TrimEntries);
@@ -46,42 +47,42 @@ public class CourseService : ICourseService
                 q = q.Include(e => e.Semester);
         }
 
-        // Sort
-        if (!string.IsNullOrWhiteSpace(query.SortBy))
+        // Sort — per D-01
+        var sortFields = new Dictionary<string, (Func<IQueryable<Course>, IOrderedQueryable<Course>> asc, Func<IQueryable<Course>, IOrderedQueryable<Course>> desc)>
         {
-            q = query.SortBy.ToLower() switch
-            {
-                "code" => query.SortDesc ? q.OrderByDescending(e => e.Code) : q.OrderBy(e => e.Code),
-                "instructor" => query.SortDesc ? q.OrderByDescending(e => e.Instructor) : q.OrderBy(e => e.Instructor),
-                "room" => query.SortDesc ? q.OrderByDescending(e => e.Room) : q.OrderBy(e => e.Room),
-                "maxstudents" => query.SortDesc ? q.OrderByDescending(e => e.MaxStudents) : q.OrderBy(e => e.MaxStudents),
-                _ => q.OrderBy(e => e.Id)
-            };
-        }
-        else
-        {
-            q = q.OrderBy(e => e.Id);
-        }
+            { "id", (q => q.OrderBy(e => e.Id), q => q.OrderByDescending(e => e.Id)) },
+            { "code", (q => q.OrderBy(e => e.Code), q => q.OrderByDescending(e => e.Code)) },
+            { "instructor", (q => q.OrderBy(e => e.Instructor), q => q.OrderByDescending(e => e.Instructor)) },
+            { "room", (q => q.OrderBy(e => e.Room), q => q.OrderByDescending(e => e.Room)) },
+            { "maxstudents", (q => q.OrderBy(e => e.MaxStudents), q => q.OrderByDescending(e => e.MaxStudents)) },
+        };
+        var ordered = q.ApplyMultiFieldSort(query.Sort, sortFields);
 
         // Count
-        var totalItems = await q.CountAsync();
+        var totalItems = await ordered.CountAsync();
 
         // Page
         var page = Math.Max(1, query.Page);
         var pageSize = Math.Clamp(query.PageSize, 1, 100);
-        var entities = await q
+        var entities = await ordered
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
 
-        // Map with expand
+        // Map with expand and apply field selection
         var expandArr = !string.IsNullOrWhiteSpace(query.Expand)
             ? query.Expand.Split(',', StringSplitOptions.TrimEntries)
             : [];
 
+        var items = entities
+            .Select(e => e.ToBusinessModel())
+            .ToResponseDtoList(expandArr)
+            .ApplyFieldSelection(query.Fields)
+            .ToList();
+
         return new PagedResult<CourseResponse>
         {
-            Items = entities.ToResponseDtoList(expandArr),
+            Items = items,
             Page = page,
             PageSize = pageSize,
             TotalItems = totalItems,
@@ -92,14 +93,26 @@ public class CourseService : ICourseService
     public async Task<CourseResponse?> GetByIdAsync(int id)
     {
         var entity = await _repository.GetByIdAsync(id);
-        return entity?.ToResponseDto();
+        return entity?.ToBusinessModel().ToResponseDto();
+    }
+
+    public async Task<CourseResponse?> GetByIdAsync(int id, string? expand)
+    {
+        var includes = !string.IsNullOrWhiteSpace(expand)
+            ? expand.Split(',', StringSplitOptions.TrimEntries)
+            : null;
+        var entity = await _repository.GetByIdAsync(id, includes);
+        if (entity == null) return null;
+
+        var expandArr = includes ?? [];
+        return entity.ToBusinessModel().ToResponseDto(expandArr);
     }
 
     public async Task<CourseResponse> AddAsync(CourseRequest request)
     {
         var entity = request.ToEntity();
         var created = await _repository.AddAsync(entity);
-        return created.ToResponseDto();
+        return created.ToBusinessModel().ToResponseDto();
     }
 
     public async Task<CourseResponse?> UpdateAsync(int id, CourseRequest request)
@@ -109,7 +122,7 @@ public class CourseService : ICourseService
 
         request.UpdateEntity(entity);
         await _repository.UpdateAsync(entity);
-        return entity.ToResponseDto();
+        return entity.ToBusinessModel().ToResponseDto();
     }
 
     public async Task<bool> DeleteAsync(int id)
