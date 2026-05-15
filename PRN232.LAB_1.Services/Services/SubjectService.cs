@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PRN232.LAB_1.Repositories.Entities;
 using PRN232.LAB_1.Repositories.Repositories;
+using PRN232.LAB_1.Services.Helpers;
 using PRN232.LAB_1.Services.Interfaces;
 using PRN232.LAB_1.Services.Mappings;
 using PRN232.LAB_1.Services.Models;
@@ -19,13 +20,14 @@ public class SubjectService : ISubjectService
     public async Task<List<SubjectResponse>> GetAllAsync()
     {
         var entities = await _repository.GetAllAsync();
-        return entities.ToResponseDtoList();
+        return entities.Select(e => e.ToBusinessModel()).ToResponseDtoList();
     }
 
     public async Task<PagedResult<SubjectResponse>> GetAllAsync(PagedQuery query)
     {
         var q = _repository.GetQueryable();
 
+        // Search
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
             var s = query.Search.ToLower();
@@ -34,32 +36,39 @@ public class SubjectService : ISubjectService
                            || e.Description.ToLower().Contains(s));
         }
 
-        if (!string.IsNullOrWhiteSpace(query.SortBy))
-        {
-            q = query.SortBy.ToLower() switch
-            {
-                "code" => query.SortDesc ? q.OrderByDescending(e => e.Code) : q.OrderBy(e => e.Code),
-                "name" => query.SortDesc ? q.OrderByDescending(e => e.Name) : q.OrderBy(e => e.Name),
-                "credits" => query.SortDesc ? q.OrderByDescending(e => e.Credits) : q.OrderBy(e => e.Credits),
-                _ => q.OrderBy(e => e.Id)
-            };
-        }
-        else
-        {
-            q = q.OrderBy(e => e.Id);
-        }
+        // Expand stub — Subject has no forward navigation properties to expand
 
-        var totalItems = await q.CountAsync();
+        // Sort — per D-01
+        var sortFields = new Dictionary<string, (Func<IQueryable<Subject>, IOrderedQueryable<Subject>> asc, Func<IQueryable<Subject>, IOrderedQueryable<Subject>> desc)>
+        {
+            { "id", (q => q.OrderBy(e => e.Id), q => q.OrderByDescending(e => e.Id)) },
+            { "code", (q => q.OrderBy(e => e.Code), q => q.OrderByDescending(e => e.Code)) },
+            { "name", (q => q.OrderBy(e => e.Name), q => q.OrderByDescending(e => e.Name)) },
+            { "credits", (q => q.OrderBy(e => e.Credits), q => q.OrderByDescending(e => e.Credits)) },
+        };
+        var ordered = q.ApplyMultiFieldSort(query.Sort, sortFields);
+
+        // Count
+        var totalItems = await ordered.CountAsync();
+
+        // Page
         var page = Math.Max(1, query.Page);
         var pageSize = Math.Clamp(query.PageSize, 1, 100);
-        var entities = await q
+        var entities = await ordered
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
 
+        // Map and apply field selection — per D-02
+        var items = entities
+            .Select(e => e.ToBusinessModel())
+            .ToResponseDtoList()
+            .ApplyFieldSelection(query.Fields)
+            .ToList();
+
         return new PagedResult<SubjectResponse>
         {
-            Items = entities.ToResponseDtoList(),
+            Items = items,
             Page = page,
             PageSize = pageSize,
             TotalItems = totalItems,
@@ -70,14 +79,23 @@ public class SubjectService : ISubjectService
     public async Task<SubjectResponse?> GetByIdAsync(int id)
     {
         var entity = await _repository.GetByIdAsync(id);
-        return entity?.ToResponseDto();
+        return entity?.ToBusinessModel().ToResponseDto();
+    }
+
+    public async Task<SubjectResponse?> GetByIdAsync(int id, string? expand)
+    {
+        var includes = !string.IsNullOrWhiteSpace(expand)
+            ? expand.Split(',', StringSplitOptions.TrimEntries)
+            : null;
+        var entity = await _repository.GetByIdAsync(id, includes);
+        return entity?.ToBusinessModel().ToResponseDto();
     }
 
     public async Task<SubjectResponse> AddAsync(SubjectRequest request)
     {
         var entity = request.ToEntity();
         var created = await _repository.AddAsync(entity);
-        return created.ToResponseDto();
+        return created.ToBusinessModel().ToResponseDto();
     }
 
     public async Task<SubjectResponse?> UpdateAsync(int id, SubjectRequest request)
@@ -87,7 +105,7 @@ public class SubjectService : ISubjectService
 
         request.UpdateEntity(entity);
         await _repository.UpdateAsync(entity);
-        return entity.ToResponseDto();
+        return entity.ToBusinessModel().ToResponseDto();
     }
 
     public async Task<bool> DeleteAsync(int id)

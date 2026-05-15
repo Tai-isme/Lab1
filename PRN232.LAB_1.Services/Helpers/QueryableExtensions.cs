@@ -9,21 +9,22 @@ public static class QueryableExtensions
 {
     /// <summary>
     /// Applies multi-field sorting. Returns ordered query.
+    /// Uses reflection for ThenBy/ThenByDescending to handle generic TKey at runtime.
     /// </summary>
     /// <param name="source">The queryable source.</param>
     /// <param name="sort">Comma-separated sort fields, e.g. "name,-id". -prefix = descending.</param>
-    /// <param name="knownFields">Dictionary of lowercase field name → (propertyLambda, isDescending).</param>
+    /// <param name="sortFunctions">Dictionary of lowercase field name → (ascending function, descending function).</param>
     /// <param name="defaultOrderKey">Default sort key when sort is empty/null.</param>
     public static IOrderedQueryable<T> ApplyMultiFieldSort<T>(
         this IQueryable<T> source,
         string? sort,
-        Dictionary<string, (LambdaExpression propertySelector, bool desc)> knownFields,
+        Dictionary<string, (Func<IQueryable<T>, IOrderedQueryable<T>> asc, Func<IQueryable<T>, IOrderedQueryable<T>> desc)> sortFunctions,
         string defaultOrderKey = "id") where T : class
     {
-        if (string.IsNullOrWhiteSpace(sort) || !knownFields.Any())
+        if (string.IsNullOrWhiteSpace(sort) || !sortFunctions.Any())
         {
-            if (knownFields.TryGetValue(defaultOrderKey, out var def))
-                return def.desc ? source.OrderByDescending(def.propertySelector) : source.OrderBy(def.propertySelector);
+            if (sortFunctions.TryGetValue(defaultOrderKey, out var def))
+                return def.asc(source);
             return source.OrderBy(e => EF.Property<int>(e, "Id"));
         }
 
@@ -35,20 +36,27 @@ public static class QueryableExtensions
             bool desc = field.StartsWith('-');
             var key = desc ? field[1..].Trim().ToLowerInvariant() : field.Trim().ToLowerInvariant();
 
-            if (!knownFields.TryGetValue(key, out var config))
+            if (!sortFunctions.TryGetValue(key, out var funcs))
                 continue;
 
             if (ordered == null)
             {
-                ordered = desc
-                    ? source.OrderByDescending(config.propertySelector)
-                    : source.OrderBy(config.propertySelector);
+                ordered = desc ? funcs.desc(source) : funcs.asc(source);
             }
             else
             {
-                ordered = desc
-                    ? ordered.ThenByDescending(config.propertySelector)
-                    : ordered.ThenBy(config.propertySelector);
+                // Extract key selector from the asc function's lambda
+                var lambda = (LambdaExpression)((MethodCallExpression)funcs.asc(source).Expression).Arguments[1];
+                var keySelector = lambda.Body.NodeType == ExpressionType.Convert
+                    ? Expression.Lambda(((UnaryExpression)lambda.Body).Operand, lambda.Parameters)
+                    : lambda;
+
+                var methodName = desc ? "ThenByDescending" : "ThenBy";
+                var thenByMethod = typeof(Queryable).GetMethods(BindingFlags.Public | BindingFlags.Static)
+                    .First(m => m.Name == methodName && m.GetParameters().Length == 2)
+                    .MakeGenericMethod(typeof(T), keySelector.ReturnType);
+
+                ordered = (IOrderedQueryable<T>)thenByMethod.Invoke(null, new object[] { ordered, keySelector })!;
             }
         }
 
