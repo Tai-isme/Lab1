@@ -45,10 +45,10 @@
 - [ ] **API-09**: Consistent response envelope: {success, message, data, errors}
 - [ ] **API-10**: HTTP 200 on success, 201 on created, 400 on bad request, 404 on not found, 500 on server error
 - [ ] **API-11**: GET collection supports search (?search=keyword)
-- [ ] **API-12**: GET collection supports sorting (?sort=field,-field)
+- [x] **API-12**: GET collection supports sorting (?sort=field,-field)
 - [ ] **API-13**: GET collection supports paging (?page=1&size=20)
-- [ ] **API-14**: GET collection supports field selection (?fields=id,name,email)
-- [ ] **API-15**: GET collection supports expansion (?expand=student,course)
+- [x] **API-14**: GET collection supports field selection (?fields=id,name,email)
+- [x] **API-15**: GET collection supports expansion (?expand=student,course)
 - [ ] **API-16**: Pagination metadata in responses: {page, pageSize, totalItems, totalPages}
 - [ ] **API-17**: Swagger/OpenAPI integration with endpoint listing, API testing, request/response docs, and HTTP status code documentation
 
@@ -111,10 +111,10 @@ None — all requirements are v1 for this lab assignment.
 | API-09 | Phase 3 | Pending |
 | API-10 | Phase 3 | Pending |
 | API-11 | Phase 3 | Pending |
-| API-12 | Phase 3 | Pending |
+| API-12 | Phase 3 | Complete |
 | API-13 | Phase 3 | Pending |
-| API-14 | Phase 3 | Pending |
-| API-15 | Phase 3 | Pending |
+| API-14 | Phase 3 | Complete |
+| API-15 | Phase 3 | Complete |
 | API-16 | Phase 3 | Pending |
 | API-17 | Phase 3 | Pending |
 | DCK-01 | Phase 4 | Pending |

@@ -105,8 +105,8 @@ Plans:
 **Goal:** All 5 List APIs support multi-field sort (`?sort=field,-field`), field selection (`?fields=x,y,z`), and expand (`?expand=related`) in GET collection endpoints
 **Requirements**: API-12, API-14, API-15
 **Depends on:** Phase 6
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 07-01-PLAN.md — Replace SortBy+SortDesc with Sort in PagedQuery; create QueryableExtensions helper (ApplyMultiFieldSort, ApplyFieldSelection)
-- [ ] 07-02-PLAN.md — Refactor all 5 services to use shared query helpers, add field selection, add expand support where missing
+- [x] 07-01-PLAN.md — Replace SortBy+SortDesc with Sort in PagedQuery; create QueryableExtensions helper (ApplyMultiFieldSort, ApplyFieldSelection)
+- [x] 07-02-PLAN.md — Refactor all 5 services to use shared query helpers, add field selection, add expand support where missing
