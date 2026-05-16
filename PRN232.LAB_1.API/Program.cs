@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using PRN232.LAB_1.API.Filters;
+using PRN232.LAB_1.API.Middleware;
 using PRN232.LAB_1.Repositories.Data;
 using PRN232.LAB_1.Services;
 using System.Reflection;
@@ -40,16 +41,37 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
+// ── Global Exception Handling ──
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 // ── Auto-apply migrations in development ──
 if (app.Environment.IsDevelopment())
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<LmsDbContext>();
-    await db.Database.MigrateAsync();
+
+    int maxRetries = 5;
+    int delayMs = 2000;
+    for (int attempt = 1; attempt <= maxRetries; attempt++)
+    {
+        try
+        {
+            await db.Database.MigrateAsync();
+            break;
+        }
+        catch (Exception ex) when (attempt < maxRetries)
+        {
+            Console.WriteLine($"[DB Retry] Attempt {attempt}/{maxRetries} failed: {ex.Message}. Retrying in {delayMs}ms...");
+            await Task.Delay(delayMs);
+            delayMs *= 2;
+        }
+    }
+
+    await DataSeeder.SeedAsync(db);
 }
 
 // ── Middleware pipeline ──
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Docker"))
 {
     app.UseSwagger();
     app.UseSwaggerUI(options =>
@@ -58,7 +80,10 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsEnvironment("Docker"))
+{
+    app.UseHttpsRedirection();
+}
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
