@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: All 4 phases complete
-last_updated: "2026-05-15T09:28:33.930Z"
-last_activity: 2026-05-15
+stopped_at: Completed 08-01 and 08-02 plans
+last_updated: "2026-05-16T09:47:19Z"
+last_activity: 2026-05-16
 progress:
-  total_phases: 7
+  total_phases: 8
   completed_phases: 5
-  total_plans: 13
-  completed_plans: 9
-  percent: 69
+  total_plans: 15
+  completed_plans: 11
+  percent: 73
 ---
 
 # Project State
@@ -21,24 +21,24 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-14)
 
 **Core value:** All LMS resources (semesters, courses, subjects, students, enrollments) can be CRUD-managed via RESTful endpoints with search, sort, paging, field selection, and expansion — meeting the lab evaluation checklist.
-**Current focus:** Phase 07 — fix-the-missing-gaps-issues-to-match-the-requirement-5-get-c
+**Current focus:** Phase 08 — thêm phase fix lỗi này
 
 ## Current Position
 
-Phase: 07 (fix-the-missing-gaps-issues-to-match-the-requirement-5-get-c) — EXECUTING
-Plan: 2 of 2
-Status: Ready to execute
-Last activity: 2026-05-15
+Phase: 08 (thêm-phase-fix-lỗi-này) — EXECUTING
+Plan: 08-01 and 08-02 completed
+Status: Phase 08 in progress (2/2 plans done)
+Last activity: 2026-05-16
 
-Progress: [███████░░░] 69%
+Progress: [█████████░] 73%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 6
-- Average duration: ~1 min
-- Total execution time: ~8 min
+- Total plans completed: 11
+- Average duration: ~5 min
+- Total execution time: ~55 min
 
 **By Phase:**
 
@@ -48,6 +48,7 @@ Progress: [███████░░░] 69%
 | 2. Business Logic | 1 | 1 | ~1 min |
 | 3. API | 3 | 3 | ~2 min |
 | 4. Deployment | 1 | 1 | ~1 min |
+| 8. Fix lỗi | 2 | 2 | ~11 min |
 
 *Updated after each plan completion*
 
@@ -58,6 +59,7 @@ Progress: [███████░░░] 69%
 - Phase 5 added: Fix project chưa đúng theo yêu cầu Business models được sử dụng đúng mục đích
 - Phase 6 added: Fix the fail rule
 - Phase 7 added: Fix the missing/gaps/issues to match the requirement 5. GET Collection Resource (List API)
+- Phase 8 added: Fix lỗi 500 Internal Server Error — thêm global exception handler cho consistent response format
 
 ### Decisions
 
@@ -95,11 +97,12 @@ Recent decisions affecting current work:
 - Phase 5: Refactor Services to use Business models explicitly (Entity → Business → Response mapping)
 - Phase 6: Fix the fail rule — add expand support to GetByIdAsync for complete related data
 - Phase 7: Implement fields selection, multi-field sorting, and update sort parameter format for List APIs
+- Phase 8: Add global exception handler to ensure 500 errors return consistent ApiResponse format
 
 ## Session Continuity
 
-Last session: 2026-05-15T09:28:33.881Z
-Stopped at: All 4 phases complete
+Last session: 2026-05-16T09:47:19Z
+Stopped at: Completed 08-01 and 08-02 plans
 Resume file: None
 
 ### Blockers/Concerns

@@ -77,6 +77,9 @@ A 3-layer ASP.NET Core 8 REST API for Learning Management System (LMS) academic 
 | 3. API | 3/3 | Complete | 2026-05-14 |
 | 4. Deployment | 0/1 | Planned | - |
 | 5. Business Model Fix | 0/2 | Planned | - |
+| 6. Fail Rule Fix | 0/2 | Planned | - |
+| 7. List API Fix | 2/2 | Complete | 2026-05-15 |
+| 8. Error Handling | 2/2 | Complete | 2026-05-16 |
 
 ### Phase 5: Fix project chưa đúng theo yêu cầu Business models được sử dụng đúng mục đích
 
@@ -119,5 +122,5 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 08-01-PLAN.md — ExceptionHandlingMiddleware + Program.cs wiring (API-09, API-10)
-- [ ] 08-02-PLAN.md — Fix Delete responses + add 500 status code to all 25 actions (API-09, API-10)
+- [x] 08-01-PLAN.md — ExceptionHandlingMiddleware + Program.cs wiring (API-09, API-10)
+- [x] 08-02-PLAN.md — Fix Delete responses + add 500 status code to all 25 actions (API-09, API-10)
