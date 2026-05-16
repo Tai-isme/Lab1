@@ -1,0 +1,9 @@
+**/bin/
+**/obj/
+.git/
+.vs/
+.planning/
+.dockerignore
+**/*.user
+**/appsettings.*.json
+!appsettings.json
