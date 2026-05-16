@@ -110,3 +110,14 @@ Plans:
 Plans:
 - [x] 07-01-PLAN.md — Replace SortBy+SortDesc with Sort in PagedQuery; create QueryableExtensions helper (ApplyMultiFieldSort, ApplyFieldSelection)
 - [x] 07-02-PLAN.md — Refactor all 5 services to use shared query helpers, add field selection, add expand support where missing
+
+### Phase 8: Error Handling & Response Consistency
+
+**Goal:** Add global exception handling middleware and fix Delete endpoint responses for consistent ApiResponse envelope
+**Requirements**: API-09, API-10
+**Depends on:** Phase 7
+**Plans:** 2 plans
+
+Plans:
+- [ ] 08-01-PLAN.md — ExceptionHandlingMiddleware + Program.cs wiring (API-09, API-10)
+- [ ] 08-02-PLAN.md — Fix Delete responses + add 500 status code to all 25 actions (API-09, API-10)
