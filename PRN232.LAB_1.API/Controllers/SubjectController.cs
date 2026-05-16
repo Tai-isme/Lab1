@@ -25,6 +25,7 @@ public class SubjectController : ControllerBase
     /// <response code="200">Returns the paginated list of subjects.</response>
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetAll([FromQuery] PagedQuery query)
     {
         var result = await _service.GetAllAsync(query);
@@ -46,6 +47,7 @@ public class SubjectController : ControllerBase
     [HttpGet("{id:int}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetById(int id, [FromQuery] string? expand = null)
     {
         var subject = await _service.GetByIdAsync(id, expand);
@@ -62,6 +64,7 @@ public class SubjectController : ControllerBase
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Create([FromBody] SubjectRequest request)
     {
         var created = await _service.AddAsync(request);
@@ -78,6 +81,7 @@ public class SubjectController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Update(int id, [FromBody] SubjectRequest request)
     {
         var updated = await _service.UpdateAsync(id, request);
@@ -94,6 +98,7 @@ public class SubjectController : ControllerBase
     [HttpDelete("{id:int}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Delete(int id)
     {
         var deleted = await _service.DeleteAsync(id);
