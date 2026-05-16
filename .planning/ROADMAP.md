@@ -66,7 +66,7 @@ A 3-layer ASP.NET Core 8 REST API for Learning Management System (LMS) academic 
   4. Both API and database containers start successfully via `docker-compose up`; API responds on http://localhost:5000
   5. Application seeds 500+ records on first startup: 5+ semesters, 10+ subjects, 50+ students, 20+ courses, 500+ enrollments (via DataSeeder class with nested loops, single transaction, idempotent check)
 **Plans**: 1 plan
-- [ ] 04-01-PLAN.md — DataSeeder.cs, Program.cs (retry + seed + HTTPS guard), Dockerfile, docker-compose.yml, .dockerignore (DAT-07, DCK-01, DCK-02, DCK-03, DCK-04)
+- [x] 04-01-PLAN.md — DataSeeder.cs, Program.cs (retry + seed + HTTPS guard), Dockerfile, docker-compose.yml, .dockerignore (DAT-07, DCK-01, DCK-02, DCK-03, DCK-04)
 
 ## Progress
 
@@ -75,7 +75,7 @@ A 3-layer ASP.NET Core 8 REST API for Learning Management System (LMS) academic 
 | 1. Foundation | 1/1 | Complete | 2026-05-14 |
 | 2. Business Logic | 2/2 | Complete | 2026-05-14 |
 | 3. API | 3/3 | Complete | 2026-05-14 |
-| 4. Deployment | 0/1 | Planned | - |
+| 4. Deployment | 1/1 | Planned | - |
 | 5. Business Model Fix | 0/2 | Planned | - |
 | 6. Fail Rule Fix | 0/2 | Planned | - |
 | 7. List API Fix | 2/2 | Complete | 2026-05-15 |
