@@ -7,6 +7,7 @@ public interface ICourseService
     Task<List<CourseResponse>> GetAllAsync();
     Task<PagedResult<CourseResponse>> GetAllAsync(PagedQuery query);
     Task<CourseResponse?> GetByIdAsync(int id);
+    Task<CourseResponse?> GetByIdAsync(int id, string? expand);
     Task<CourseResponse> AddAsync(CourseRequest request);
     Task<CourseResponse?> UpdateAsync(int id, CourseRequest request);
     Task<bool> DeleteAsync(int id);

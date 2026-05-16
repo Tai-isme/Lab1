@@ -7,6 +7,7 @@ public interface ISemesterService
     Task<List<SemesterResponse>> GetAllAsync();
     Task<PagedResult<SemesterResponse>> GetAllAsync(PagedQuery query);
     Task<SemesterResponse?> GetByIdAsync(int id);
+    Task<SemesterResponse?> GetByIdAsync(int id, string? expand);
     Task<SemesterResponse> AddAsync(SemesterRequest request);
     Task<SemesterResponse?> UpdateAsync(int id, SemesterRequest request);
     Task<bool> DeleteAsync(int id);

@@ -1,69 +1,95 @@
-# Technology Stack
+---
+title: Technology Stack
+created: 2026-05-15
+focus: tech
+---
 
-**Analysis Date:** 2026-05-14
+# Technology Stack
 
 ## Languages
 
-**Primary:**
-- C# 12 (.NET 8.0) — All application code in three ASP.NET Core projects
-
-**Secondary:**
-- Not detected — No JavaScript, TypeScript, SQL, or other languages present
+- **C# 12** — All application code (API controllers, service layer, repositories, entity models, mappings, migrations). Leverages .NET 8's implicit usings and nullable reference types.
+- **SQL** — Migrations and seed data via Entity Framework Core (`PRN232.LAB_1.Repositories/Migrations/`); raw SQL not used directly in application code.
 
 ## Runtime
 
-**Environment:**
-- .NET 8.0 (`net8.0` target framework in all `.csproj` files)
+- **.NET 8.0** (SDK `8.0.x` / ASP.NET Core `8.0`) — Target framework for all three projects (`net8.0`).
+  - API project uses `Microsoft.NET.Sdk.Web` (ASP.NET Core).
+  - Services and Repositories use `Microsoft.NET.Sdk` (class libraries).
 
-**Package Manager:**
-- NuGet (via `dotnet restore`)
-- Lockfile: Not present (no `packages.lock.json`)
+## Frameworks & Libraries
 
-## Frameworks
+### Web Framework
+- **ASP.NET Core 8.0** — REST API host with controllers (`[ApiController]` attribute), model binding, routing, middleware pipeline, and DI container.
+- **Swashbuckle.AspNetCore 6.6.2** — Swagger/OpenAPI spec generation and Swagger UI. Configured in `Program.cs` (lines 24–39) with XML doc comments enabled.
 
-**Core:**
-- ASP.NET Core 8.0 — Web API framework used by all 3 projects
-  - Entry pattern: Minimal-style `WebApplication.CreateBuilder(args)` in `Program.cs`
+### ORM / Data Access
+- **Entity Framework Core 8.0.11** — ORM for SQL Server. Code-first approach with `DbContext` (`PRN232.LAB_1.Repositories/Data/LmsDbContext.cs`), fluent configuration classes, and EF Core migrations.
+- **EF Core SqlServer Provider 8.0.11** — SQL Server database provider for EF Core.
+- **EF Core Tools 8.0.11** — Design-time tools for migrations (`dotnet ef migrations`).
+- **EF Core Design 8.0.11** — Design-time DbContext factory support (`LmsDbContextFactory.cs`).
 
-**Testing:**
-- Not detected — No test projects, no xUnit/NUnit/MSTest references
+### Dependency Injection
+- **ASP.NET Core built-in DI** — All services and repositories registered via `IServiceCollection` extensions in `PRN232.LAB_1.Services/DependencyInjection.cs`.
+- **Microsoft.Extensions.DependencyInjection.Abstractions 8.0.2** — DI abstractions used by the Services project.
 
-**Build/Dev:**
-- `dotnet build` / `dotnet run` — Standard .NET CLI
-- IIS Express — Configured in `launchSettings.json` for local development
+### Serialization
+- **System.Text.Json** (built-in ASP.NET Core) — JSON serialization for API request/response bodies. Includes a custom `ConditionalJsonPropertyAttribute` in `PRN232.LAB_1.API/Attributes/`.
 
-## Key Dependencies
+## Dependencies
 
-**Critical:**
-- `Swashbuckle.AspNetCore` v6.6.2 — Swagger/OpenAPI UI for API documentation (present in all 3 projects)
-- `Microsoft.NET.Sdk.Web` — ASP.NET Core SDK used by all 3 projects
+### Production
 
-**Infrastructure:**
-- `Microsoft.AspNetCore.Mvc` (implicit via SDK) — Controller and API attribute support
-- `Microsoft.Extensions.Logging` (implicit via SDK) — Logging abstractions
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `Swashbuckle.AspNetCore` | 6.6.2 | Swagger/OpenAPI documentation and UI |
+| `Microsoft.EntityFrameworkCore.SqlServer` | 8.0.11 | SQL Server EF Core provider |
+| `Microsoft.Extensions.DependencyInjection.Abstractions` | 8.0.2 | DI abstractions for the Services layer |
+
+### Development / Design-Time
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `Microsoft.EntityFrameworkCore.Design` | 8.0.11 | EF Core design-time tools (migrations) |
+| `Microsoft.EntityFrameworkCore.Tools` | 8.0.11 | EF Core CLI tooling for migrations |
+
+## Project Structure (Solutions)
+
+### `Lab1.sln` — 3 projects:
+| Project | Path | Type | Dependencies |
+|---------|------|------|-------------|
+| `PRN232.LAB_1.API` | `PRN232.LAB_1.API/` | ASP.NET Core Web API | → `PRN232.LAB_1.Services` |
+| `PRN232.LAB_1.Services` | `PRN232.LAB_1.Services/` | Class Library | → `PRN232.LAB_1.Repositories` |
+| `PRN232.LAB_1.Repositories` | `PRN232.LAB_1.Repositories/` | Class Library | None |
 
 ## Configuration
 
-**Environment:**
-- `appsettings.json` — Base configuration per project (Logging, AllowedHosts)
-- `appsettings.Development.json` — Development overrides per project (same Logging settings)
-- `ASPNETCORE_ENVIRONMENT` environment variable — Set to `Development` in launch profiles
+- **`PRN232.LAB_1.API/appsettings.json`** — Primary configuration: logging levels, connection strings (SQL Server `DefaultConnection`), allowed hosts.
+- **`PRN232.LAB_1.API/appsettings.Development.json`** — Development overrides (logging level only).
+- **`PRN232.LAB_1.API/appsettings.Docker.json`** *(referenced by docker-compose env)* — Docker-specific config. The `Docker` environment is set via `ASPNETCORE_ENVIRONMENT=Docker` in `docker-compose.yml`.
+- **`PRN232.LAB_1.API/Properties/launchSettings.json`** — Dev launch profiles: `http` (port 5004), `https` (port 7242/5004), `IIS Express` (port 25412/44352). All launch Swagger UI on startup.
+- **Connection string format:** `Server=localhost,1433;Database=PRN232_Lab1;User Id=sa;Password=...;TrustServerCertificate=True;`
 
-**Build:**
-- `Lab1.sln` — Solution file (Visual Studio 2022 v17.14)
-- No `Directory.Build.props` or `Directory.Build.targets` detected
-- No `.editorconfig` detected
+## Build & Deploy
 
-## Platform Requirements
+### Build
+- **`dotnet build`** / `dotnet publish` — Standard .NET CLI. Release build configured in Dockerfile: `dotnet publish -c Release -o /app/publish`.
+- XML documentation file generation enabled (`GenerateDocumentationFile=true`) with warning 1591 suppressed.
+- **Solution:** `Lab1.sln` contains all 3 projects.
 
-**Development:**
-- .NET 8.0 SDK
-- Visual Studio 2022 (v17.14) or compatible IDE
-- IIS Express (optional, for IIS Express profile)
+### Docker Deployment
+- **Multi-stage Dockerfile** at `PRN232.LAB_1.API/Dockerfile`:
+  - **Build stage:** `mcr.microsoft.com/dotnet/sdk:8.0` — Restores, then publishes.
+  - **Runtime stage:** `mcr.microsoft.com/dotnet/aspnet:8.0` — Runs on port 80 with `dotnet PRN232.LAB_1.API.dll`.
+- **docker-compose.yml** — Orchestrates two services:
+  - `sqlserver` — `mcr.microsoft.com/mssql/server:2022-latest` on port 1433, named volume `lms-sql-data`.
+  - `api` — Built from the Dockerfile, port 5000:80, depends on `sqlserver`, passes connection string via environment variable.
+- **`.dockerignore`** — Excludes `bin/`, `obj/`, `.git/`, `.vs/`, `.planning/`, and env-specific appsettings.
 
-**Production:**
-- Not defined — No deployment configuration detected
+### Languages (Code)
+- C# 12: All project source code
+- SQL: Embedded in EF Core migrations (`PRN232.LAB_1.Repositories/Migrations/`)
 
 ---
 
-*Stack analysis: 2026-05-14*
+*Stack analysis: 2026-05-15*

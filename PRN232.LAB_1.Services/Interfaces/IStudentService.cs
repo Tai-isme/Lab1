@@ -7,6 +7,7 @@ public interface IStudentService
     Task<List<StudentResponse>> GetAllAsync();
     Task<PagedResult<StudentResponse>> GetAllAsync(PagedQuery query);
     Task<StudentResponse?> GetByIdAsync(int id);
+    Task<StudentResponse?> GetByIdAsync(int id, string? expand);
     Task<StudentResponse> AddAsync(StudentRequest request);
     Task<StudentResponse?> UpdateAsync(int id, StudentRequest request);
     Task<bool> DeleteAsync(int id);

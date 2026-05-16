@@ -89,6 +89,39 @@ public static class EnrollmentMapper
         return dto;
     }
 
+    public static EnrollmentResponse ToResponseDto(this EnrollmentBusiness model)
+    {
+        return new EnrollmentResponse
+        {
+            Id = model.Id,
+            StudentId = model.StudentId,
+            CourseId = model.CourseId,
+            EnrollmentDate = model.EnrollmentDate,
+            Status = model.Status,
+            Grade = model.Grade
+        };
+    }
+
+    public static EnrollmentResponse ToResponseDto(this EnrollmentBusiness model, string[] expand)
+    {
+        var dto = model.ToResponseDto();
+        if (expand.Contains("student") && model.Student != null)
+            dto.Student = model.Student.ToResponseDto();
+        if (expand.Contains("course") && model.Course != null)
+            dto.Course = model.Course.ToResponseDto();
+        return dto;
+    }
+
+    public static List<EnrollmentResponse> ToResponseDtoList(this IEnumerable<EnrollmentBusiness> models, string[] expand)
+    {
+        return models.Select(m => m.ToResponseDto(expand)).ToList();
+    }
+
+    public static List<EnrollmentResponse> ToResponseDtoList(this IEnumerable<EnrollmentBusiness> models)
+    {
+        return models.Select(m => m.ToResponseDto()).ToList();
+    }
+
     public static List<EnrollmentResponse> ToResponseDtoList(this IEnumerable<Enrollment> entities, string[] expand)
     {
         return entities.Select(e => e.ToResponseDto(expand)).ToList();

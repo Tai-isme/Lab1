@@ -102,6 +102,41 @@ public static class CourseMapper
         return dto;
     }
 
+    public static CourseResponse ToResponseDto(this CourseBusiness model)
+    {
+        return new CourseResponse
+        {
+            Id = model.Id,
+            Code = model.Code,
+            SubjectId = model.SubjectId,
+            SemesterId = model.SemesterId,
+            Instructor = model.Instructor,
+            Room = model.Room,
+            MaxStudents = model.MaxStudents,
+            Schedule = model.Schedule
+        };
+    }
+
+    public static CourseResponse ToResponseDto(this CourseBusiness model, string[] expand)
+    {
+        var dto = model.ToResponseDto();
+        if (expand.Contains("subject") && model.Subject != null)
+            dto.Subject = model.Subject.ToResponseDto();
+        if (expand.Contains("semester") && model.Semester != null)
+            dto.Semester = model.Semester.ToResponseDto();
+        return dto;
+    }
+
+    public static List<CourseResponse> ToResponseDtoList(this IEnumerable<CourseBusiness> models, string[] expand)
+    {
+        return models.Select(m => m.ToResponseDto(expand)).ToList();
+    }
+
+    public static List<CourseResponse> ToResponseDtoList(this IEnumerable<CourseBusiness> models)
+    {
+        return models.Select(m => m.ToResponseDto()).ToList();
+    }
+
     public static List<CourseResponse> ToResponseDtoList(this IEnumerable<Course> entities, string[] expand)
     {
         return entities.Select(e => e.ToResponseDto(expand)).ToList();

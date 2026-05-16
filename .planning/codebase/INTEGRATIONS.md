@@ -1,75 +1,81 @@
+---
+title: External Integrations
+created: 2026-05-15
+focus: tech
+---
+
 # External Integrations
 
-**Analysis Date:** 2026-05-14
+## Databases
 
-## APIs & External Services
+### SQL Server 2022
+- **Purpose:** Primary data store for the LMS. Stores semesters, courses, subjects, students, and enrollments.
+- **Connection:** Entity Framework Core 8.0.11 with `Microsoft.EntityFrameworkCore.SqlServer` provider.
+- **Connection string location:**
+  - `PRN232.LAB_1.API/appsettings.json` — `ConnectionStrings:DefaultConnection` (Development/localhost)
+  - `docker-compose.yml` — `ConnectionStrings__DefaultConnection` environment variable (Docker container-to-container)
+  - `PRN232.LAB_1.Repositories/Data/LmsDbContextFactory.cs` — Hardcoded design-time connection string for EF Core CLI migrations
+- **Database name:** `PRN232_Lab1`
+- **Auth:** SQL Server login (`sa` user with password `Lab1_Pass123`).
+- **Schema:** Code-first with EF Core migrations. 5 entity tables seeded via `DataSeeder.cs`:
+  - `Semesters` (5 rows)
+  - `Subjects` (10 rows)
+  - `Students` (50 rows)
+  - `Courses` (20 rows)
+  - `Enrollments` (variable, ~400–700 rows)
+- **Connection method:** `DbContext` injected via DI into `Repository<T>`, used with `AsNoTracking()` for reads and `SaveChangesAsync()` for writes.
 
-**None detected:**
-- The codebase consists of 3 standalone ASP.NET Core Web API projects with no outgoing HTTP calls or external API integrations
-- No `HttpClient`, `IHttpClientFactory`, or typed client registrations present
-- No third-party API SDKs (Stripe, SendGrid, Twilio, etc.) referenced
+### Key Configuration Files
+| File | Role |
+|------|------|
+| `PRN232.LAB_1.Repositories/Data/LmsDbContext.cs` | Core `DbContext` with `DbSet<>` properties for each entity and `OnModelCreating` |
+| `PRN232.LAB_1.Repositories/Data/Configurations/` | Fluent API entity configurations (5 files: `SemesterConfiguration.cs`, `CourseConfiguration.cs`, etc.) |
+| `PRN232.LAB_1.Repositories/Migrations/` | EF Core migrations (1 initial migration + model snapshot) |
+| `PRN232.LAB_1.Repositories/Data/DataSeeder.cs` | Seed data generation with deterministic random (`seed: 42`) |
 
-## Data Storage
+## External APIs
 
-**Databases:**
-- Not configured — No database connection strings in `appsettings.json`
-- No Entity Framework Core, Dapper, or any ORM packages referenced
-- No SQL, NoSQL, or in-memory database setup
+**None detected.** The application does not consume any external REST/SOAP/gRPC APIs. All data is self-contained within the LMS database.
 
-**File Storage:**
-- Local filesystem only — No blob/object storage integration
+## Auth Providers
 
-**Caching:**
-- None — No Redis, MemoryCache, or distributed cache setup
+**None detected.** The application has no authentication or authorization middleware configured. The pipeline in `Program.cs` calls `app.UseAuthorization()` but no authentication schemes, JWT bearer, or identity providers are registered. The API is fully open/anonymous.
 
-## Authentication & Identity
+## Webhooks
 
-**Auth Provider:**
-- None — No authentication middleware configured
-- `app.UseAuthorization()` is called in `Program.cs` but no `AddAuthentication()` or `AddIdentity()` services registered
-- No JWT, OAuth, OpenID Connect, or cookie auth setup
+**None detected.** No webhook endpoints, outgoing webhook calls, or event-driven integrations to external services.
 
-## Monitoring & Observability
+## Observability & Monitoring
 
-**Error Tracking:**
-- None — No Sentry, Application Insights, or similar SDKs
+**Logging:**
+- **ASP.NET Core built-in `ILogger`** — Default console logging via `Microsoft.AspNetCore` and application-level categories.
+- **Log levels:** `Information` default, `Warning` for `Microsoft.AspNetCore`.
+- **No structured logging** (Serilog, NLog, etc.) — plain console output.
 
-**Logs:**
-- `Microsoft.Extensions.Logging` (built-in) — Standard ASP.NET Core logging
-- Log level: `Information` (Default), `Warning` (Microsoft.AspNetCore)
-
-## CI/CD & Deployment
-
-**Hosting:**
-- Not configured — No Dockerfile, no cloud deployment manifests
-
-**CI Pipeline:**
-- None — No GitHub Actions, Azure Pipelines, or other CI config detected
+**Health checks:** Not configured.
 
 ## Environment Configuration
 
-**Required env vars:**
-- `ASPNETCORE_ENVIRONMENT` — Set per launch profile (Development/Production)
+### Critical Environment Variables
+| Variable | Where Set | Purpose |
+|----------|-----------|---------|
+| `ASPNETCORE_ENVIRONMENT` | `launchSettings.json` / docker-compose | Sets `Development` or `Docker` environment |
+| `ConnectionStrings__DefaultConnection` | docker-compose.yml (line 23) | Overrides connection string in container |
 
-**Secrets location:**
-- No secrets mechanism configured — No User Secrets, Azure Key Vault, or env-file solutions detected
+### Application Environments
+- **Development** (`launchSettings.json`) — Auto-migrates and seeds DB on startup, enables Swagger, enables HTTPS redirect.
+- **Docker** (`docker-compose.yml`) — Auto-migrates and seeds DB, enables Swagger, disables HTTPS redirect (runs on port 80).
+- **Production/other** — Only `app.UseAuthorization()` + `MapControllers()` + `app.Run()` (no migration, no Swagger).
 
-## Webhooks & Callbacks
+## CI/CD
 
-**Incoming:**
-- None detected
+**None detected.** No CI pipeline configuration files (GitHub Actions, Azure DevOps, Jenkins, etc.) exist in the repository.
 
-**Outgoing:**
-- None detected
+## Deployment
 
-## External NuGet Dependencies
-
-| Package | Version | Source |
-|---------|---------|--------|
-| `Swashbuckle.AspNetCore` | 6.6.2 | NuGet.org (implied) |
-
-No other external package dependencies exist across all 3 projects.
+- **Containerized:** Docker Compose (`docker-compose.yml`) for local development and testing.
+- **Single-instance:** API and database each run in one container. No load balancer, reverse proxy, or orchestration (Kubernetes) configuration.
 
 ---
 
-*Integration audit: 2026-05-14*
+*Integration audit: 2026-05-15*

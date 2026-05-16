@@ -1,95 +1,180 @@
-# Testing Patterns
+---
+title: Testing Strategy
+created: 2026-05-15
+focus: quality
+---
 
-**Analysis Date:** 2026-05-14
+# Testing Strategy
 
 ## Test Framework
 
-**No test framework detected.** The solution does not contain any test projects, test files, or test runner configuration.
+**Not configured.** No test projects exist in the solution. The `.sln` file (`Lab1.sln`) contains only three projects:
 
-**Current state:**
-- No `*.Tests` or `*.Test` projects in the solution
-- No `*.test.*` or `*.spec.*` files found anywhere in the repository
-- No `xUnit`, `NUnit`, `MSTest`, or any other testing NuGet packages referenced
-- No `jest.config.*`, `vitest.config.*`, or test runner config files
-- No `.runsettings` or test settings files
+- `PRN232.LAB_1.API` — ASP.NET Core Web API
+- `PRN232.LAB_1.Services` — Business logic (class library)
+- `PRN232.LAB_1.Repositories` — Data access (class library)
 
-**Run Commands:**
-```bash
-# No test commands available — no test project exists
-dotnet test    # Would fail — no test projects found
-```
+No test SDK packages (xUnit, NUnit, MSTest) are referenced in any `.csproj`.
 
-## Test File Organization
+**No test runner configuration files exist:**
+- No `.runsettings`
+- No `xunit.runner.json`
+- No `Directory.Build.props` with test settings
 
-**Not applicable** — no test files exist.
-
-If tests are to be introduced, the convention should follow .NET standard patterns:
-
-- **Test project naming:** `PRN232.LAB_1.{ProjectName}.Tests` (e.g., `PRN232.LAB_1.API.Tests`)
-- **Test project location:** `tests/` directory at solution root
-- **File naming:** `{ClassName}Tests.cs` (e.g., `WeatherForecastControllerTests.cs`)
-- **Framework recommendation:** xUnit (most common for .NET 8 ASP.NET Core projects)
+**No test files exist:**
+- No `*.Tests.*` files
+- No `*.Test.*` files
+- No `*.Spec.*` files
+- No `Tests/` or `Test/` directories
 
 ## Test Structure
 
-**Not applicable** — no test files exist.
+**Not applicable** — no test projects exist.
+
+The expected structure for a .NET 8 solution would be a separate test project (e.g., `PRN232.LAB_1.Tests` or `Lab1.Tests`) in the solution directory:
+
+```
+Lab1/
+├── PRN232.LAB_1.API/          # System Under Test
+├── PRN232.LAB_1.Services/     # System Under Test
+├── PRN232.LAB_1.Repositories/ # System Under Test
+└── Lab1.Tests/                # Missing — needs creation
+    ├── Controllers/
+    ├── Services/
+    ├── Repositories/
+    └── Integration/
+```
 
 ## Mocking
 
-**Not applicable** — no test files exist.
+**Not configured.** No mocking library (Moq, NSubstitute, FakeItEasy, NMock3) is referenced.
 
-**Recommended approach** for this codebase when tests are introduced:
-- **Framework:** Moq or NSubstitute
-- Purpose: Mock `ILogger<T>` for controller tests, mock repository interfaces for service tests
+If tests are added, the recommended mocking approach based on the architecture:
 
-## Fixtures and Factories
-
-**Not applicable** — no test files exist.
-
-**Recommended approach:**
-- Static test data factories for `WeatherForecast` instances
-- Inline array initialization for test summaries
+- **Repository mocking:** Since all services depend on `IRepository<T>`, mock this generic interface
+- **Service mocking:** For controller tests, mock `IStudentService`, `ICourseService`, etc.
+- **DbContext mocking:** For repository tests, consider using an in-memory SQLite or EF Core InMemory provider rather than mocking `DbSet`
 
 ## Coverage
 
-**Requirements:** Not enforced — no coverage tooling configured.
+**Not configured.** No coverage tool (Coverlet, dotCover, NCover) is referenced in any project file.
 
-**View Coverage:**
-```bash
-# No coverage tool configured
+No coverage targets or thresholds are defined.
+
+## Recommendations for Test Implementation
+
+### Project Setup
+Create a test project targeting `net8.0`:
+```
+dotnet new xunit -n Lab1.Tests
+dotnet add Lab1.Tests/Lab1.Tests.csproj reference PRN232.LAB_1.API
+dotnet add Lab1.Tests/Lab1.Tests.csproj reference PRN232.LAB_1.Services
+dotnet add Lab1.Tests/Lab1.Tests.csproj reference PRN232.LAB_1.Repositories
 ```
 
-**Recommended tool:** `coverlet.collector` NuGet package with `dotnet test --collect:"XPlat Code Coverage"`
+Add NuGet packages:
+- `xunit` (2.9.x) — test framework
+- `xunit.runner.visualstudio` — VS test runner
+- `Moq` (4.20.x) — mocking framework
+- `FluentAssertions` (7.x) — optional, for fluent assertions
+- `Microsoft.EntityFrameworkCore.InMemory` — for repository tests
+- `Coverlet.collector` — for code coverage
 
-## Test Types
+### What to Test (Priority Order)
 
-**Unit Tests:** None exist.
-- Would cover individual controllers and service methods
-- Mock `ILogger<T>` and any service/repository dependencies
+1. **Services** (highest value) — Business logic, search/sort/pagination, null handling
+   - `StudentService.GetAllAsync(PagedQuery)` — verify search filtering, sorting, paging math
+   - `StudentService.GetByIdAsync(int)` — verify null return for missing entity
+   - `StudentService.AddAsync(StudentRequest)` — verify entity creation and response mapping
+   - `StudentService.UpdateAsync(int, StudentRequest)` — verify update and null for missing
+   - `StudentService.DeleteAsync(int)` — verify return true/false
 
-**Integration Tests:** None exist.
-- Would verify API pipeline (middleware, routing, serialization)
-- `Microsoft.AspNetCore.Mvc.Testing` with `WebApplicationFactory<T>`
+2. **Controllers** (medium value) — Route mapping, status codes, pagination header
+   - `StudentController.GetAll` — verify 200 + pagination in HttpContext.Items
+   - `StudentController.GetById` — verify 200 for found, 404 for missing
+   - `StudentController.Create` — verify 201 + CreatedAtAction
+   - `StudentController.Update` — verify 200 for success, 404 for missing
+   - `StudentController.Delete` — verify 200 + message, 404 for missing
 
-**E2E Tests:** Not used.
+3. **Mappers** (low effort, high confidence) — Extension method correctness
+   - `StudentMapper.ToResponseDto(Student)` — verify all fields map correctly
+   - `StudentMapper.ToEntity(StudentRequest)` — verify field mapping
+   - `StudentMapper.UpdateEntity(StudentRequest, Student)` — verify mutation
 
-## Codebase-Specific Testing Considerations
+4. **Repositories** (integration-level, with InMemory provider) — EF Core behavior
+   - CRUD operations
+   - `GetQueryable()` behavior
 
-Given the current 3-project structure (`API`, `Services`, `Repositories`), testing should be introduced in layers:
+5. **ResponseEnvelopeFilter** (integration-level) — HTTP response wrapping
+   - Verify 200 responses wrapped in `ApiResponse<T>.Ok`
+   - Verify 400 responses include validation errors
+   - Verify 404 responses use `ApiResponse.Fail`
 
-1. **Repositories project** — Unit test any data access logic (none present yet)
-2. **Services project** — Unit test business logic with mocked repositories
-3. **API project** — Integration tests using `WebApplicationFactory` to test full HTTP pipeline
+6. **Validation** (on Request models) — DataAnnotation behavior
+   - Verify `[Required]`, `[StringLength]`, `[EmailAddress]`, `[Range]` attributes
 
-## Current Test Gaps
+### Common Test Patterns
 
-| Area | Gap | Risk |
-|------|-----|------|
-| Controllers | No controller tests exist | Route changes, model changes, error states go untested |
-| Models | No model validation tests | No validation logic to test (none exists yet) |
-| Error handling | No error path tests | Custom error handling would be added without safety net |
-| Middleware | No pipeline tests | Any middleware ordering issues undetectable |
+**Service unit test pattern (with Moq):**
+```csharp
+// Arrange
+var mockRepo = new Mock<IRepository<Student>>();
+mockRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(new Student { Id = 1, /* ... */ });
+var service = new StudentService(mockRepo.Object);
+
+// Act
+var result = await service.GetByIdAsync(1);
+
+// Assert
+Assert.NotNull(result);
+Assert.Equal(1, result.Id);
+```
+
+**Controller unit test pattern (with Moq):**
+```csharp
+// Arrange
+var mockService = new Mock<IStudentService>();
+mockService.Setup(s => s.GetByIdAsync(1)).ReturnsAsync(new StudentResponse { Id = 1 });
+var controller = new StudentController(mockService.Object);
+
+// Act
+var result = await controller.GetById(1);
+
+// Assert
+var okResult = Assert.IsType<OkObjectResult>(result);
+var response = Assert.IsType<StudentResponse>(okResult.Value);
+Assert.Equal(1, response.Id);
+```
+
+**Pagination search test pattern:**
+```csharp
+[Fact]
+public async Task GetAllAsync_WithSearch_FiltersByName()
+{
+    var data = new List<Student>
+    {
+        new() { Code = "STU001", FullName = "Alice", Email = "a@test.com" },
+        new() { Code = "STU002", FullName = "Bob", Email = "b@test.com" },
+    }.AsQueryable();
+
+    var mockRepo = new Mock<IRepository<Student>>();
+    mockRepo.Setup(r => r.GetQueryable()).Returns(data);
+    var service = new StudentService(mockRepo.Object);
+
+    var result = await service.GetAllAsync(new PagedQuery { Search = "alice" });
+
+    Assert.Single(result.Items);
+    Assert.Equal("Alice", result.Items[0].FullName);
+}
+```
+
+### Test Architecture Constraints
+- **Never mock Entity Framework** — use InMemory provider for repo tests
+- **Mapper tests should be pure unit tests** — no dependencies to mock
+- **Controller tests should only test HTTP concerns** — route selection, status codes, headers
+- **Service tests should verify business logic** — search/filter/sort/paging correctness, null handling
+- **Test data should use real model types** — avoid anonymous objects or tuples for assertions
 
 ---
 
-*Testing analysis: 2026-05-14*
+*Testing analysis: 2026-05-15*

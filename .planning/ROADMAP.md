@@ -76,7 +76,7 @@ A 3-layer ASP.NET Core 8 REST API for Learning Management System (LMS) academic 
 | 2. Business Logic | 2/2 | Complete | 2026-05-14 |
 | 3. API | 3/3 | Complete | 2026-05-14 |
 | 4. Deployment | 1/1 | Complete | 2026-05-16 |
-| 5. Business Model Fix | 0/2 | Planned | - |
+| 5. Business Model Fix | 2/2 | Complete | 2026-05-16 |
 | 6. Fail Rule Fix | 2/2 | Complete | 2026-05-16 |
 | 7. List API Fix | 2/2 | Complete | 2026-05-15 |
 | 8. Error Handling | 2/2 | Complete | 2026-05-16 |

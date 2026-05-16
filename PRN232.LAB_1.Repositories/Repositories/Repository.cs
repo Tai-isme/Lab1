@@ -24,6 +24,19 @@ public class Repository<T> : IRepository<T> where T : class
         return await _dbSet.FindAsync(id);
     }
 
+    public async Task<T?> GetByIdAsync(int id, string[]? includes)
+    {
+        if (includes == null || includes.Length == 0)
+            return await _dbSet.FindAsync(id);
+
+        var query = _dbSet.AsQueryable();
+        foreach (var include in includes)
+        {
+            query = query.Include(include);
+        }
+        return await query.FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == id);
+    }
+
     public async Task<T> AddAsync(T entity)
     {
         await _dbSet.AddAsync(entity);

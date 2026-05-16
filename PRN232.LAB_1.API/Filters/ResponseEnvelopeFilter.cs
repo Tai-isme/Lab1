@@ -20,7 +20,7 @@ public class ResponseEnvelopeFilter : IResultFilter
         // Get pagination metadata from HttpContext.Items (set by controller)
         var pagination = context.HttpContext.Items["Pagination"];
 
-        // Handle NotFoundResult (ASP.NET Core's 404 helper)
+        // Handle NotFoundResult (ASP.NET Core's 404 helper with no body)
         if (context.Result is NotFoundResult)
         {
             var notFoundResponse = typeof(ApiResponse<>)
@@ -38,7 +38,7 @@ public class ResponseEnvelopeFilter : IResultFilter
         // Handle ObjectResult (the common case)
         if (context.Result is ObjectResult result)
         {
-            var statusCode = result.StatusCode ?? 200;
+            var statusCode = ResolveStatusCode(context.Result, result.StatusCode);
             var data = result.Value;
 
             object? envelope = null;
@@ -100,12 +100,48 @@ public class ResponseEnvelopeFilter : IResultFilter
 
             if (envelope != null)
             {
-                context.Result = new ObjectResult(envelope)
+                var wrappedResult = new ObjectResult(envelope)
                 {
                     StatusCode = statusCode
                 };
+
+                // Preserve Location header for CreatedAtAction results
+                if (context.Result is CreatedAtActionResult createdAtAction)
+                {
+                    var urlHelper = createdAtAction.UrlHelper;
+                    if (urlHelper != null)
+                    {
+                        var url = urlHelper.Action(new Microsoft.AspNetCore.Mvc.Routing.UrlActionContext
+                        {
+                            Action = createdAtAction.ActionName,
+                            Controller = createdAtAction.ControllerName,
+                            Values = createdAtAction.RouteValues,
+                            Protocol = context.HttpContext.Request.Scheme
+                        });
+                        if (!string.IsNullOrEmpty(url))
+                        {
+                            context.HttpContext.Response.Headers["Location"] = url;
+                        }
+                    }
+                }
+
+                context.Result = wrappedResult;
             }
         }
+    }
+
+    private static int ResolveStatusCode(IActionResult result, int? explicitStatusCode)
+    {
+        if (explicitStatusCode.HasValue)
+            return explicitStatusCode.Value;
+
+        return result switch
+        {
+            CreatedResult or CreatedAtActionResult or CreatedAtRouteResult => 201,
+            BadRequestObjectResult or BadRequestResult => 400,
+            NotFoundObjectResult => 404,
+            _ => 200
+        };
     }
 
     public void OnResultExecuted(ResultExecutedContext context) { }

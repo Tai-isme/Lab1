@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 04-01 plan — Docker containerization + seed data
-last_updated: "2026-05-16T04:27:13.445Z"
-last_activity: 2026-05-16 -- Phase 05 execution started
+status: complete
+stopped_at: Completed Phase 08 — Error Handling & Response Consistency
+last_updated: "2026-05-16T14:00:00.000Z"
+last_activity: 2026-05-16 -- Project completed
 progress:
   total_phases: 8
-  completed_phases: 7
-  total_plans: 15
-  completed_plans: 13
-  percent: 87
+  completed_phases: 8
+  total_plans: 17
+  completed_plans: 17
+  percent: 100
 ---
 
 # Project State
@@ -21,24 +21,24 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-14)
 
 **Core value:** All LMS resources (semesters, courses, subjects, students, enrollments) can be CRUD-managed via RESTful endpoints with search, sort, paging, field selection, and expansion — meeting the lab evaluation checklist.
-**Current focus:** Phase 05 — fix-project-ch-a-ng-theo-y-u-c-u-business-models-c-s-d-ng-ng
+**Current focus:** Project Completed
 
 ## Current Position
 
-Phase: 05 (fix-project-ch-a-ng-theo-y-u-c-u-business-models-c-s-d-ng-ng) — EXECUTING
-Plan: 1 of 2
-Status: Executing Phase 05
-Last activity: 2026-05-16 -- Phase 05 execution started
+Phase: 08 (Error Handling & Response Consistency) — COMPLETE
+Plan: 08-02 of 2
+Status: Complete
+Last activity: 2026-05-16 -- Project completed
 
-Progress: [██████████] 80%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 11
+- Total plans completed: 15
 - Average duration: ~5 min
-- Total execution time: ~55 min
+- Total execution time: ~1h 15 min
 
 **By Phase:**
 
@@ -48,6 +48,8 @@ Progress: [██████████] 80%
 | 2. Business Logic | 1 | 1 | ~1 min |
 | 3. API | 3 | 3 | ~2 min |
 | 4. Deployment | 1 | 1 | ~2 min |
+| 5. Business Models Fix | 2 | 2 | ~1 min |
+| 6. Fix the fail rule | 2 | 2 | ~2 min |
 | 7. List API Fix | 2 | 2 | ~2 min |
 | 8. Fix lỗi | 2 | 2 | ~11 min |
 
@@ -92,21 +94,19 @@ Recent decisions affecting current work:
 - [Phase 4]: docker-compose.yml with sqlserver + api, env var connection string (Server=sqlserver)
 - [Phase 4]: Retry loop in Program.cs (5 attempts, exponential backoff) for DB readiness
 - [Phase 4]: ASPNETCORE_ENVIRONMENT=Docker, conditional HTTPS redirect, Docker-aware Swagger
+- [Phase 6]: GetByIdAsync supports ?expand= query parameter for all 5 entities
 
 ### Pending Todos
 
-- Phase 5: Refactor Services to use Business models explicitly (Entity → Business → Response mapping)
-- Phase 6: Fix the fail rule — add expand support to GetByIdAsync for complete related data
-- Phase 7: Implement fields selection, multi-field sorting, and update sort parameter format for List APIs
+- Phase 7: Implement fields selection, multi-field sorting for List APIs
 - Phase 8: Add global exception handler to ensure 500 errors return consistent ApiResponse format
 
 ## Session Continuity
 
-Last session: 2026-05-16T10:00:00Z
-Stopped at: Completed 04-01 plan — Docker containerization + seed data
+Last session: 2026-05-16T13:15:00Z
+Stopped at: Phase 06 execution completed
 Resume file: None
 
 ### Blockers/Concerns
 
-- Phase 5 concern: Business models exist but Services bypass them — map Entity → Response directly
-- Phase 6 concern: GetByIdAsync returns only scalar properties — no navigation properties included, no ?expand support
+- None — all phases ready for execution

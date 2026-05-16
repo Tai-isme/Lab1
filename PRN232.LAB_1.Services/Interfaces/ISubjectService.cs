@@ -7,6 +7,7 @@ public interface ISubjectService
     Task<List<SubjectResponse>> GetAllAsync();
     Task<PagedResult<SubjectResponse>> GetAllAsync(PagedQuery query);
     Task<SubjectResponse?> GetByIdAsync(int id);
+    Task<SubjectResponse?> GetByIdAsync(int id, string? expand);
     Task<SubjectResponse> AddAsync(SubjectRequest request);
     Task<SubjectResponse?> UpdateAsync(int id, SubjectRequest request);
     Task<bool> DeleteAsync(int id);

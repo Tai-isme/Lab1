@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using PRN232.LAB_1.API.Models;
 using PRN232.LAB_1.Services.Interfaces;
 using PRN232.LAB_1.Services.Models;
 
@@ -116,6 +115,6 @@ public class SemesterController : ControllerBase
         var deleted = await _service.DeleteAsync(id);
         if (!deleted)
             return NotFound();
-        return Ok(ApiResponse<object>.Ok(new { message = "Deleted successfully" }));
+        return Ok(new { message = "Deleted successfully" });
     }
 }
