@@ -77,7 +77,7 @@ A 3-layer ASP.NET Core 8 REST API for Learning Management System (LMS) academic 
 | 3. API | 3/3 | Complete | 2026-05-14 |
 | 4. Deployment | 1/1 | Complete | 2026-05-16 |
 | 5. Business Model Fix | 0/2 | Planned | - |
-| 6. Fail Rule Fix | 0/2 | Planned | - |
+| 6. Fail Rule Fix | 2/2 | Complete | 2026-05-16 |
 | 7. List API Fix | 2/2 | Complete | 2026-05-15 |
 | 8. Error Handling | 2/2 | Complete | 2026-05-16 |
 
@@ -100,8 +100,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 06-01-PLAN.md — Repository layer: expand-aware GetByIdAsync with EF Core Include() support (API-07)
-- [ ] 06-02-PLAN.md — Services + Controllers: wire expand parameter through all 5 entities (API-07)
+- [x] 06-01-PLAN.md — Repository layer: expand-aware GetByIdAsync with EF Core Include() support (API-07)
+- [x] 06-02-PLAN.md — Services + Controllers: wire expand parameter through all 5 entities (API-07)
 
 ### Phase 7: Fix the missing/gaps/issues to match the requirement 5. GET Collection Resource (List API)
 
