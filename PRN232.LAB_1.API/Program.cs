@@ -44,8 +44,8 @@ var app = builder.Build();
 // ── Global Exception Handling ──
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-// ── Auto-apply migrations in development ──
-if (app.Environment.IsDevelopment())
+// ── Auto-apply migrations in development and Docker ──
+if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Docker"))
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<LmsDbContext>();
