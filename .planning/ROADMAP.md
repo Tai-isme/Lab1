@@ -89,8 +89,8 @@ A 3-layer ASP.NET Core 8 REST API for Learning Management System (LMS) academic 
 **Plans:** 2 plans
 
 Plans:
-- [ ] 05-01-PLAN.md — Add Business → Response mapping methods to all 5 entity mappers
-- [ ] 05-02-PLAN.md — Refactor all 5 services to use Entity → Business → Response chain
+- [x] 05-01-PLAN.md — Add Business → Response mapping methods to all 5 entity mappers
+- [x] 05-02-PLAN.md — Refactor all 5 services to use Entity → Business → Response chain
 
 ### Phase 6: Fix the fail rule
 
