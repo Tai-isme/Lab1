@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using PRN232.LAB_1.API.Models;
 using PRN232.LAB_1.Services.Interfaces;
 using PRN232.LAB_1.Services.Models;
 
@@ -43,15 +44,16 @@ public class SemesterController : ControllerBase
     /// Retrieves a single semester by its ID.
     /// </summary>
     /// <param name="id">The semester ID.</param>
+    /// <param name="expand">Optional comma-separated list of related entities to include.</param>
     /// <returns>The semester if found; otherwise 404.</returns>
     /// <response code="200">Semester found and returned.</response>
     /// <response code="404">Semester not found.</response>
     [HttpGet("{id:int}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetById(int id)
+    public async Task<IActionResult> GetById(int id, [FromQuery] string? expand = null)
     {
-        var semester = await _service.GetByIdAsync(id);
+        var semester = await _service.GetByIdAsync(id, expand);
         if (semester == null)
             return NotFound();
         return Ok(semester);
@@ -109,6 +111,6 @@ public class SemesterController : ControllerBase
         var deleted = await _service.DeleteAsync(id);
         if (!deleted)
             return NotFound();
-        return Ok(new { message = "Deleted successfully" });
+        return Ok(ApiResponse<object>.Ok(new { message = "Deleted successfully" }));
     }
 }
