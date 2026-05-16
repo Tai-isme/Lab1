@@ -89,6 +89,30 @@ public static class StudentMapper
         return entity.ToResponseDto(); // Student has no forward nav to expand
     }
 
+    public static StudentResponse ToResponseDto(this StudentBusiness model)
+    {
+        return new StudentResponse
+        {
+            Id = model.Id,
+            Code = model.Code,
+            FullName = model.FullName,
+            Email = model.Email,
+            Phone = model.Phone,
+            DateOfBirth = model.DateOfBirth,
+            Address = model.Address
+        };
+    }
+
+    public static StudentResponse ToResponseDto(this StudentBusiness model, string[] expand)
+    {
+        return model.ToResponseDto(); // Student has no forward nav to expand
+    }
+
+    public static List<StudentResponse> ToResponseDtoList(this IEnumerable<StudentBusiness> models)
+    {
+        return models.Select(m => m.ToResponseDto()).ToList();
+    }
+
     public static List<StudentResponse> ToResponseDtoList(this IEnumerable<Student> entities)
     {
         return entities.Select(e => e.ToResponseDto()).ToList();

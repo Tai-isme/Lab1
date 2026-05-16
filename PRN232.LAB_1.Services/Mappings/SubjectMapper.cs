@@ -77,6 +77,28 @@ public static class SubjectMapper
         return entity.ToResponseDto(); // Subject has no forward nav to expand
     }
 
+    public static SubjectResponse ToResponseDto(this SubjectBusiness model)
+    {
+        return new SubjectResponse
+        {
+            Id = model.Id,
+            Code = model.Code,
+            Name = model.Name,
+            Description = model.Description,
+            Credits = model.Credits
+        };
+    }
+
+    public static SubjectResponse ToResponseDto(this SubjectBusiness model, string[] expand)
+    {
+        return model.ToResponseDto(); // Subject has no forward nav to expand
+    }
+
+    public static List<SubjectResponse> ToResponseDtoList(this IEnumerable<SubjectBusiness> models)
+    {
+        return models.Select(m => m.ToResponseDto()).ToList();
+    }
+
     public static List<SubjectResponse> ToResponseDtoList(this IEnumerable<Subject> entities)
     {
         return entities.Select(e => e.ToResponseDto()).ToList();

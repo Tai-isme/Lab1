@@ -83,6 +83,29 @@ public static class SemesterMapper
         return entity.ToResponseDto(); // Semester has no forward nav to expand
     }
 
+    public static SemesterResponse ToResponseDto(this SemesterBusiness model)
+    {
+        return new SemesterResponse
+        {
+            Id = model.Id,
+            Code = model.Code,
+            Name = model.Name,
+            StartDate = model.StartDate,
+            EndDate = model.EndDate,
+            IsActive = model.IsActive
+        };
+    }
+
+    public static SemesterResponse ToResponseDto(this SemesterBusiness model, string[] expand)
+    {
+        return model.ToResponseDto(); // Semester has no forward nav to expand
+    }
+
+    public static List<SemesterResponse> ToResponseDtoList(this IEnumerable<SemesterBusiness> models)
+    {
+        return models.Select(m => m.ToResponseDto()).ToList();
+    }
+
     public static List<SemesterResponse> ToResponseDtoList(this IEnumerable<Semester> entities)
     {
         return entities.Select(e => e.ToResponseDto()).ToList();
