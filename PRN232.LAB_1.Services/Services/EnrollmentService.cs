@@ -10,22 +10,22 @@ namespace PRN232.LAB_1.Services.Services;
 
 public class EnrollmentService : IEnrollmentService
 {
-    private readonly IRepository<Enrollment> _repository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public EnrollmentService(IRepository<Enrollment> repository)
+    public EnrollmentService(IUnitOfWork unitOfWork)
     {
-        _repository = repository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<List<EnrollmentResponse>> GetAllAsync()
     {
-        var entities = await _repository.GetAllAsync();
+        var entities = await _unitOfWork.Enrollments.GetAllAsync();
         return entities.Select(e => e.ToBusinessModel()).ToResponseDtoList();
     }
 
     public async Task<PagedResult<EnrollmentResponse>> GetAllAsync(PagedQuery query)
     {
-        var q = _repository.GetQueryable();
+        var q = _unitOfWork.Enrollments.GetQueryable();
 
         // Search
         if (!string.IsNullOrWhiteSpace(query.Search))
@@ -89,7 +89,7 @@ public class EnrollmentService : IEnrollmentService
 
     public async Task<EnrollmentResponse?> GetByIdAsync(int id)
     {
-        var entity = await _repository.GetByIdAsync(id);
+        var entity = await _unitOfWork.Enrollments.GetByIdAsync(id);
         return entity?.ToBusinessModel().ToResponseDto();
     }
 
@@ -98,7 +98,7 @@ public class EnrollmentService : IEnrollmentService
         var includes = !string.IsNullOrWhiteSpace(expand)
             ? expand.Split(',', StringSplitOptions.TrimEntries)
             : null;
-        var entity = await _repository.GetByIdAsync(id, includes);
+        var entity = await _unitOfWork.Enrollments.GetByIdAsync(id, includes);
         if (entity == null) return null;
 
         var expandArr = includes ?? [];
@@ -108,26 +108,29 @@ public class EnrollmentService : IEnrollmentService
     public async Task<EnrollmentResponse> AddAsync(EnrollmentRequest request)
     {
         var entity = request.ToEntity();
-        var created = await _repository.AddAsync(entity);
+        var created = await _unitOfWork.Enrollments.AddAsync(entity);
+        await _unitOfWork.SaveChangesAsync();
         return created.ToBusinessModel().ToResponseDto();
     }
 
     public async Task<EnrollmentResponse?> UpdateAsync(int id, EnrollmentRequest request)
     {
-        var entity = await _repository.GetByIdAsync(id);
+        var entity = await _unitOfWork.Enrollments.GetByIdAsync(id);
         if (entity == null) return null;
 
         request.UpdateEntity(entity);
-        await _repository.UpdateAsync(entity);
+        await _unitOfWork.Enrollments.UpdateAsync(entity);
+        await _unitOfWork.SaveChangesAsync();
         return entity.ToBusinessModel().ToResponseDto();
     }
 
     public async Task<bool> DeleteAsync(int id)
     {
-        var entity = await _repository.GetByIdAsync(id);
+        var entity = await _unitOfWork.Enrollments.GetByIdAsync(id);
         if (entity == null) return false;
 
-        await _repository.DeleteAsync(entity);
+        await _unitOfWork.Enrollments.DeleteAsync(entity);
+        await _unitOfWork.SaveChangesAsync();
         return true;
     }
 }

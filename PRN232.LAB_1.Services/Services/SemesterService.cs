@@ -10,22 +10,22 @@ namespace PRN232.LAB_1.Services.Services;
 
 public class SemesterService : ISemesterService
 {
-    private readonly IRepository<Semester> _repository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public SemesterService(IRepository<Semester> repository)
+    public SemesterService(IUnitOfWork unitOfWork)
     {
-        _repository = repository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<List<SemesterResponse>> GetAllAsync()
     {
-        var entities = await _repository.GetAllAsync();
+        var entities = await _unitOfWork.Semesters.GetAllAsync();
         return entities.Select(e => e.ToBusinessModel()).ToResponseDtoList();
     }
 
     public async Task<PagedResult<SemesterResponse>> GetAllAsync(PagedQuery query)
     {
-        var q = _repository.GetQueryable();
+        var q = _unitOfWork.Semesters.GetQueryable();
 
         // Search
         if (!string.IsNullOrWhiteSpace(query.Search))
@@ -78,7 +78,7 @@ public class SemesterService : ISemesterService
 
     public async Task<SemesterResponse?> GetByIdAsync(int id)
     {
-        var entity = await _repository.GetByIdAsync(id);
+        var entity = await _unitOfWork.Semesters.GetByIdAsync(id);
         return entity?.ToBusinessModel().ToResponseDto();
     }
 
@@ -87,33 +87,36 @@ public class SemesterService : ISemesterService
         var includes = !string.IsNullOrWhiteSpace(expand)
             ? expand.Split(',', StringSplitOptions.TrimEntries)
             : null;
-        var entity = await _repository.GetByIdAsync(id, includes);
+        var entity = await _unitOfWork.Semesters.GetByIdAsync(id, includes);
         return entity?.ToBusinessModel().ToResponseDto();
     }
 
     public async Task<SemesterResponse> AddAsync(SemesterRequest request)
     {
         var entity = request.ToEntity();
-        var created = await _repository.AddAsync(entity);
+        var created = await _unitOfWork.Semesters.AddAsync(entity);
+        await _unitOfWork.SaveChangesAsync();
         return created.ToBusinessModel().ToResponseDto();
     }
 
     public async Task<SemesterResponse?> UpdateAsync(int id, SemesterRequest request)
     {
-        var entity = await _repository.GetByIdAsync(id);
+        var entity = await _unitOfWork.Semesters.GetByIdAsync(id);
         if (entity == null) return null;
 
         request.UpdateEntity(entity);
-        await _repository.UpdateAsync(entity);
+        await _unitOfWork.Semesters.UpdateAsync(entity);
+        await _unitOfWork.SaveChangesAsync();
         return entity.ToBusinessModel().ToResponseDto();
     }
 
     public async Task<bool> DeleteAsync(int id)
     {
-        var entity = await _repository.GetByIdAsync(id);
+        var entity = await _unitOfWork.Semesters.GetByIdAsync(id);
         if (entity == null) return false;
 
-        await _repository.DeleteAsync(entity);
+        await _unitOfWork.Semesters.DeleteAsync(entity);
+        await _unitOfWork.SaveChangesAsync();
         return true;
     }
 }

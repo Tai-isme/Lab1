@@ -10,22 +10,22 @@ namespace PRN232.LAB_1.Services.Services;
 
 public class StudentService : IStudentService
 {
-    private readonly IRepository<Student> _repository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public StudentService(IRepository<Student> repository)
+    public StudentService(IUnitOfWork unitOfWork)
     {
-        _repository = repository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<List<StudentResponse>> GetAllAsync()
     {
-        var entities = await _repository.GetAllAsync();
+        var entities = await _unitOfWork.Students.GetAllAsync();
         return entities.Select(e => e.ToBusinessModel()).ToResponseDtoList();
     }
 
     public async Task<PagedResult<StudentResponse>> GetAllAsync(PagedQuery query)
     {
-        var q = _repository.GetQueryable();
+        var q = _unitOfWork.Students.GetQueryable();
 
         // Search
         if (!string.IsNullOrWhiteSpace(query.Search))
@@ -86,7 +86,7 @@ public class StudentService : IStudentService
 
     public async Task<StudentResponse?> GetByIdAsync(int id)
     {
-        var entity = await _repository.GetByIdAsync(id);
+        var entity = await _unitOfWork.Students.GetByIdAsync(id);
         return entity?.ToBusinessModel().ToResponseDto();
     }
 
@@ -95,33 +95,36 @@ public class StudentService : IStudentService
         var includes = !string.IsNullOrWhiteSpace(expand)
             ? expand.Split(',', StringSplitOptions.TrimEntries)
             : null;
-        var entity = await _repository.GetByIdAsync(id, includes);
+        var entity = await _unitOfWork.Students.GetByIdAsync(id, includes);
         return entity?.ToBusinessModel().ToResponseDto();
     }
 
     public async Task<StudentResponse> AddAsync(StudentRequest request)
     {
         var entity = request.ToEntity();
-        var created = await _repository.AddAsync(entity);
+        var created = await _unitOfWork.Students.AddAsync(entity);
+        await _unitOfWork.SaveChangesAsync();
         return created.ToBusinessModel().ToResponseDto();
     }
 
     public async Task<StudentResponse?> UpdateAsync(int id, StudentRequest request)
     {
-        var entity = await _repository.GetByIdAsync(id);
+        var entity = await _unitOfWork.Students.GetByIdAsync(id);
         if (entity == null) return null;
 
         request.UpdateEntity(entity);
-        await _repository.UpdateAsync(entity);
+        await _unitOfWork.Students.UpdateAsync(entity);
+        await _unitOfWork.SaveChangesAsync();
         return entity.ToBusinessModel().ToResponseDto();
     }
 
     public async Task<bool> DeleteAsync(int id)
     {
-        var entity = await _repository.GetByIdAsync(id);
+        var entity = await _unitOfWork.Students.GetByIdAsync(id);
         if (entity == null) return false;
 
-        await _repository.DeleteAsync(entity);
+        await _unitOfWork.Students.DeleteAsync(entity);
+        await _unitOfWork.SaveChangesAsync();
         return true;
     }
 }

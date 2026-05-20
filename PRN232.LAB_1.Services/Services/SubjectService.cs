@@ -10,22 +10,22 @@ namespace PRN232.LAB_1.Services.Services;
 
 public class SubjectService : ISubjectService
 {
-    private readonly IRepository<Subject> _repository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public SubjectService(IRepository<Subject> repository)
+    public SubjectService(IUnitOfWork unitOfWork)
     {
-        _repository = repository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<List<SubjectResponse>> GetAllAsync()
     {
-        var entities = await _repository.GetAllAsync();
+        var entities = await _unitOfWork.Subjects.GetAllAsync();
         return entities.Select(e => e.ToBusinessModel()).ToResponseDtoList();
     }
 
     public async Task<PagedResult<SubjectResponse>> GetAllAsync(PagedQuery query)
     {
-        var q = _repository.GetQueryable();
+        var q = _unitOfWork.Subjects.GetQueryable();
 
         // Search
         if (!string.IsNullOrWhiteSpace(query.Search))
@@ -78,7 +78,7 @@ public class SubjectService : ISubjectService
 
     public async Task<SubjectResponse?> GetByIdAsync(int id)
     {
-        var entity = await _repository.GetByIdAsync(id);
+        var entity = await _unitOfWork.Subjects.GetByIdAsync(id);
         return entity?.ToBusinessModel().ToResponseDto();
     }
 
@@ -87,33 +87,36 @@ public class SubjectService : ISubjectService
         var includes = !string.IsNullOrWhiteSpace(expand)
             ? expand.Split(',', StringSplitOptions.TrimEntries)
             : null;
-        var entity = await _repository.GetByIdAsync(id, includes);
+        var entity = await _unitOfWork.Subjects.GetByIdAsync(id, includes);
         return entity?.ToBusinessModel().ToResponseDto();
     }
 
     public async Task<SubjectResponse> AddAsync(SubjectRequest request)
     {
         var entity = request.ToEntity();
-        var created = await _repository.AddAsync(entity);
+        var created = await _unitOfWork.Subjects.AddAsync(entity);
+        await _unitOfWork.SaveChangesAsync();
         return created.ToBusinessModel().ToResponseDto();
     }
 
     public async Task<SubjectResponse?> UpdateAsync(int id, SubjectRequest request)
     {
-        var entity = await _repository.GetByIdAsync(id);
+        var entity = await _unitOfWork.Subjects.GetByIdAsync(id);
         if (entity == null) return null;
 
         request.UpdateEntity(entity);
-        await _repository.UpdateAsync(entity);
+        await _unitOfWork.Subjects.UpdateAsync(entity);
+        await _unitOfWork.SaveChangesAsync();
         return entity.ToBusinessModel().ToResponseDto();
     }
 
     public async Task<bool> DeleteAsync(int id)
     {
-        var entity = await _repository.GetByIdAsync(id);
+        var entity = await _unitOfWork.Subjects.GetByIdAsync(id);
         if (entity == null) return false;
 
-        await _repository.DeleteAsync(entity);
+        await _unitOfWork.Subjects.DeleteAsync(entity);
+        await _unitOfWork.SaveChangesAsync();
         return true;
     }
 }
