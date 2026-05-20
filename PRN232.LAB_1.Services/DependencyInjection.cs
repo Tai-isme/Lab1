@@ -10,6 +10,7 @@ public static class DependencyInjection
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         services.AddScoped<ISemesterService, SemesterService>();
         services.AddScoped<ICourseService, CourseService>();
