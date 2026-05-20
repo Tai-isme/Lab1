@@ -108,7 +108,7 @@ public class EnrollmentService : IEnrollmentService
     public async Task<EnrollmentResponse> AddAsync(EnrollmentRequest request)
     {
         var entity = request.ToEntity();
-        var created = await _unitOfWork.Enrollments.AddAsync(entity);
+        var created = _unitOfWork.Enrollments.Add(entity);
         await _unitOfWork.SaveChangesAsync();
         return created.ToBusinessModel().ToResponseDto();
     }
@@ -119,7 +119,7 @@ public class EnrollmentService : IEnrollmentService
         if (entity == null) return null;
 
         request.UpdateEntity(entity);
-        await _unitOfWork.Enrollments.UpdateAsync(entity);
+        _unitOfWork.Enrollments.Update(entity);
         await _unitOfWork.SaveChangesAsync();
         return entity.ToBusinessModel().ToResponseDto();
     }
@@ -129,7 +129,7 @@ public class EnrollmentService : IEnrollmentService
         var entity = await _unitOfWork.Enrollments.GetByIdAsync(id);
         if (entity == null) return false;
 
-        await _unitOfWork.Enrollments.DeleteAsync(entity);
+        _unitOfWork.Enrollments.Delete(entity);
         await _unitOfWork.SaveChangesAsync();
         return true;
     }

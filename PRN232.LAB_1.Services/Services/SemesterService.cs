@@ -94,7 +94,7 @@ public class SemesterService : ISemesterService
     public async Task<SemesterResponse> AddAsync(SemesterRequest request)
     {
         var entity = request.ToEntity();
-        var created = await _unitOfWork.Semesters.AddAsync(entity);
+        var created = _unitOfWork.Semesters.Add(entity);
         await _unitOfWork.SaveChangesAsync();
         return created.ToBusinessModel().ToResponseDto();
     }
@@ -105,7 +105,7 @@ public class SemesterService : ISemesterService
         if (entity == null) return null;
 
         request.UpdateEntity(entity);
-        await _unitOfWork.Semesters.UpdateAsync(entity);
+        _unitOfWork.Semesters.Update(entity);
         await _unitOfWork.SaveChangesAsync();
         return entity.ToBusinessModel().ToResponseDto();
     }
@@ -115,7 +115,7 @@ public class SemesterService : ISemesterService
         var entity = await _unitOfWork.Semesters.GetByIdAsync(id);
         if (entity == null) return false;
 
-        await _unitOfWork.Semesters.DeleteAsync(entity);
+        _unitOfWork.Semesters.Delete(entity);
         await _unitOfWork.SaveChangesAsync();
         return true;
     }

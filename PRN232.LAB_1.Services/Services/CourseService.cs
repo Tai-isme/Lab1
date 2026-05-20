@@ -111,7 +111,7 @@ public class CourseService : ICourseService
     public async Task<CourseResponse> AddAsync(CourseRequest request)
     {
         var entity = request.ToEntity();
-        var created = await _unitOfWork.Courses.AddAsync(entity);
+        var created = _unitOfWork.Courses.Add(entity);
         await _unitOfWork.SaveChangesAsync();
         return created.ToBusinessModel().ToResponseDto();
     }
@@ -122,7 +122,7 @@ public class CourseService : ICourseService
         if (entity == null) return null;
 
         request.UpdateEntity(entity);
-        await _unitOfWork.Courses.UpdateAsync(entity);
+        _unitOfWork.Courses.Update(entity);
         await _unitOfWork.SaveChangesAsync();
         return entity.ToBusinessModel().ToResponseDto();
     }
@@ -132,7 +132,7 @@ public class CourseService : ICourseService
         var entity = await _unitOfWork.Courses.GetByIdAsync(id);
         if (entity == null) return false;
 
-        await _unitOfWork.Courses.DeleteAsync(entity);
+        _unitOfWork.Courses.Delete(entity);
         await _unitOfWork.SaveChangesAsync();
         return true;
     }

@@ -102,7 +102,7 @@ public class StudentService : IStudentService
     public async Task<StudentResponse> AddAsync(StudentRequest request)
     {
         var entity = request.ToEntity();
-        var created = await _unitOfWork.Students.AddAsync(entity);
+        var created = _unitOfWork.Students.Add(entity);
         await _unitOfWork.SaveChangesAsync();
         return created.ToBusinessModel().ToResponseDto();
     }
@@ -113,7 +113,7 @@ public class StudentService : IStudentService
         if (entity == null) return null;
 
         request.UpdateEntity(entity);
-        await _unitOfWork.Students.UpdateAsync(entity);
+        _unitOfWork.Students.Update(entity);
         await _unitOfWork.SaveChangesAsync();
         return entity.ToBusinessModel().ToResponseDto();
     }
@@ -123,7 +123,7 @@ public class StudentService : IStudentService
         var entity = await _unitOfWork.Students.GetByIdAsync(id);
         if (entity == null) return false;
 
-        await _unitOfWork.Students.DeleteAsync(entity);
+        _unitOfWork.Students.Delete(entity);
         await _unitOfWork.SaveChangesAsync();
         return true;
     }

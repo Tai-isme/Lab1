@@ -37,18 +37,18 @@ public class Repository<T> : IRepository<T> where T : class
         return await query.FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == id);
     }
 
-    public async Task<T> AddAsync(T entity)
+    public T Add(T entity)
     {
-        await _dbSet.AddAsync(entity);
+        _dbSet.Add(entity);
         return entity;
     }
 
-    public async Task UpdateAsync(T entity)
+    public void Update(T entity)
     {
         _dbSet.Update(entity);
     }
 
-    public async Task DeleteAsync(T entity)
+    public void Delete(T entity)
     {
         _dbSet.Remove(entity);
     }

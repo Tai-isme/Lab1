@@ -94,7 +94,7 @@ public class SubjectService : ISubjectService
     public async Task<SubjectResponse> AddAsync(SubjectRequest request)
     {
         var entity = request.ToEntity();
-        var created = await _unitOfWork.Subjects.AddAsync(entity);
+        var created = _unitOfWork.Subjects.Add(entity);
         await _unitOfWork.SaveChangesAsync();
         return created.ToBusinessModel().ToResponseDto();
     }
@@ -105,7 +105,7 @@ public class SubjectService : ISubjectService
         if (entity == null) return null;
 
         request.UpdateEntity(entity);
-        await _unitOfWork.Subjects.UpdateAsync(entity);
+        _unitOfWork.Subjects.Update(entity);
         await _unitOfWork.SaveChangesAsync();
         return entity.ToBusinessModel().ToResponseDto();
     }
@@ -115,7 +115,7 @@ public class SubjectService : ISubjectService
         var entity = await _unitOfWork.Subjects.GetByIdAsync(id);
         if (entity == null) return false;
 
-        await _unitOfWork.Subjects.DeleteAsync(entity);
+        _unitOfWork.Subjects.Delete(entity);
         await _unitOfWork.SaveChangesAsync();
         return true;
     }
