@@ -13,6 +13,7 @@ public class UnitOfWork : IUnitOfWork
     private IRepository<Subject>? _subjects;
     private IRepository<Student>? _students;
     private IRepository<Enrollment>? _enrollments;
+    private readonly Dictionary<Type, object> _repositories = new();
 
     public UnitOfWork(LmsDbContext context)
     {
@@ -24,6 +25,17 @@ public class UnitOfWork : IUnitOfWork
     public IRepository<Subject> Subjects => _subjects ??= new Repository<Subject>(_context);
     public IRepository<Student> Students => _students ??= new Repository<Student>(_context);
     public IRepository<Enrollment> Enrollments => _enrollments ??= new Repository<Enrollment>(_context);
+
+    public IRepository<TEntity> Repository<TEntity>() where TEntity : class
+    {
+        var type = typeof(TEntity);
+        if (!_repositories.TryGetValue(type, out var repo))
+        {
+            repo = new Repository<TEntity>(_context);
+            _repositories[type] = repo;
+        }
+        return (IRepository<TEntity>)repo;
+    }
 
     public async Task<int> SaveChangesAsync()
     {

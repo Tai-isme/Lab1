@@ -11,5 +11,7 @@ public interface IUnitOfWork
     IRepository<Student> Students { get; }
     IRepository<Enrollment> Enrollments { get; }
 
+    IRepository<TEntity> Repository<TEntity>() where TEntity : class;
+
     Task<int> SaveChangesAsync();
 }
