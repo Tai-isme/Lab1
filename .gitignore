@@ -28,6 +28,12 @@ mono_crash.*
 # Planning docs (local-only)
 .planning/
 
+# Agent directories
+.antigravitycli/
+.bg-shell/
+.gsd/
+.opencode/
+
 # Environment files
 .env
 .env.*
