@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
+status: completed
 stopped_at: Phase 10 context gathered
-last_updated: "2026-05-21T02:07:56.868Z"
-last_activity: 2026-05-21 -- Phase 01 execution started
+last_updated: "2026-05-21T02:18:04.467Z"
+last_activity: 2026-05-21 -- Phase 01 marked complete
 progress:
-  total_phases: 11
-  completed_phases: 10
-  total_plans: 19
+  total_phases: 12
+  completed_phases: 9
+  total_plans: 20
   completed_plans: 18
-  percent: 91
+  percent: 82
 ---
 
 # Project State
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-05-14)
 
 ## Current Position
 
-Phase: 01 (foundation-scaffold-fix-data-layer) — EXECUTING
+Phase: 01 — COMPLETE
 Plan: 1 of 1
-Status: Executing Phase 01
-Last activity: 2026-05-21 -- Phase 01 execution started
+Status: Phase 01 complete
+Last activity: 2026-05-21 -- Phase 01 marked complete
 
 Progress: [██████████] 100%
 
@@ -66,6 +66,7 @@ Progress: [██████████] 100%
 - Phase 9 added: Implement Unit of Work pattern
 - Phase 10 added: Implement generics to LMS project
 - Phase 11 added: WARNING: Thiếu appsettings.Docker.json — docker-compose.yml set ASPNETCORE_ENVIRONMENT=Docker nhưng có file appsettings.Docker.json. Connection string được override trực tiếp qua environment variable trong compose file — vẫn chạy được nhưng không ideal.
+- Phase 12 added: Swagger chỉ bật trong Development mode — cần thêm điều kiện IsDocker() để bật Swagger khi demo/test API trong Docker
 
 ### Decisions
 

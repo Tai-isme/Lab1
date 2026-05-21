@@ -164,3 +164,13 @@ Plans:
 
 Plans:
 - [ ] 11-01-PLAN.md — Create appsettings.Docker.json, remove ConnectionStrings env var from docker-compose.yml
+
+### Phase 12: WARNING: Swagger chỉ bật trong Development mode — Program.cs:30-34 — Swagger chỉ active khi app.Environment.IsDevelopment(). Trong Docker (ASPNETCORE_ENVIRONMENT=Docker) Swagger sẽ không bật. Nếu cần demo/test API trong Docker, cần thêm điều kiện IsDocker() hoặc bỏ check environment.
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 11
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 12 to break down)
