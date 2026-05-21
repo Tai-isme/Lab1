@@ -80,6 +80,7 @@ A 3-layer ASP.NET Core 8 REST API for Learning Management System (LMS) academic 
 | 6. Fail Rule Fix | 2/2 | Complete | 2026-05-16 |
 | 7. List API Fix | 2/2 | Complete | 2026-05-15 |
 | 8. Error Handling | 2/2 | Complete | 2026-05-16 |
+| 9. Unit of Work Pattern | 1/1 | Complete | 2026-05-20 |
 
 ### Phase 5: Fix project chưa đúng theo yêu cầu Business models được sử dụng đúng mục đích
 
@@ -124,3 +125,17 @@ Plans:
 Plans:
 - [x] 08-01-PLAN.md — ExceptionHandlingMiddleware + Program.cs wiring (API-09, API-10)
 - [x] 08-02-PLAN.md — Fix Delete responses + add 500 status code to all 25 actions (API-09, API-10)
+
+### Phase 9: Implement Unit of Work pattern
+**Goal**: Implement the Unit of Work pattern across Repositories and Services layers to coordinate multi-repository write operations and ensure transaction atomicity.
+**Depends on**: Phase 8
+**Requirements**: DAT-04, DAT-05, SVC-04, SVC-05
+**Success Criteria** (what must be TRUE):
+  1. `IUnitOfWork` interface is defined in Services project under `PRN232.LAB_1.Services/Interfaces/IUnitOfWork.cs`.
+  2. `UnitOfWork` class is implemented, coordinating `LmsDbContext` operations without causing circular project dependencies.
+  3. `Repository<T>` write operations (Add, Update, Delete) do not perform direct database saves.
+  4. All 5 services (`SemesterService`, `CourseService`, `SubjectService`, `StudentService`, `EnrollmentService`) are refactored to inject `IUnitOfWork` and call `SaveChangesAsync()` on write operations.
+  5. `IUnitOfWork` is registered in `DependencyInjection.cs` as a scoped service.
+**Plans**: 1 plan
+- [x] 09-01-PLAN.md — Refactor repository saving, implement UnitOfWork class and interface, register in DI, and refactor all 5 services to use IUnitOfWork (DAT-04, DAT-05, SVC-04, SVC-05)
+
