@@ -2,13 +2,6 @@ using PRN232.LAB_1.Services.Models;
 
 namespace PRN232.LAB_1.Services.Interfaces;
 
-public interface IEnrollmentService
+public interface IEnrollmentService : IGenericService<EnrollmentResponse, EnrollmentRequest>
 {
-    Task<List<EnrollmentResponse>> GetAllAsync();
-    Task<PagedResult<EnrollmentResponse>> GetAllAsync(PagedQuery query);
-    Task<EnrollmentResponse?> GetByIdAsync(int id);
-    Task<EnrollmentResponse?> GetByIdAsync(int id, string? expand);
-    Task<EnrollmentResponse> AddAsync(EnrollmentRequest request);
-    Task<EnrollmentResponse?> UpdateAsync(int id, EnrollmentRequest request);
-    Task<bool> DeleteAsync(int id);
 }
