@@ -74,9 +74,11 @@ public class ResponseEnvelopeFilter : IResultFilter
                     }
                 }
 
-                var message = errors.Count > 0
-                    ? "Validation failed"
-                    : (result.Value?.ToString() ?? "Bad request");
+                var message = result.Value is ProblemDetails pd
+                    ? pd.Title ?? "Bad request"
+                    : errors.Count > 0
+                        ? "Validation failed"
+                        : (result.Value?.ToString() ?? "Bad request");
 
                 envelope = typeof(ApiResponse<>)
                     .MakeGenericType(typeof(object))
@@ -85,10 +87,14 @@ public class ResponseEnvelopeFilter : IResultFilter
             }
             else if (statusCode == 404)
             {
+                var message = result.Value is ProblemDetails pd
+                    ? pd.Title ?? "Resource not found"
+                    : result.Value?.ToString() ?? "Resource not found";
+
                 envelope = typeof(ApiResponse<>)
                     .MakeGenericType(typeof(object))
                     .GetMethod("Fail", new[] { typeof(string), typeof(Dictionary<string, string[]>) })?
-                    .Invoke(null, new object?[] { result.Value?.ToString() ?? "Resource not found", null });
+                    .Invoke(null, new object?[] { message, null });
             }
             else
             {

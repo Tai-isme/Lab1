@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using PRN232.LAB_1.Repositories.Repositories;
 using PRN232.LAB_1.Services.Helpers;
 using PRN232.LAB_1.Services.Interfaces;
 using PRN232.LAB_1.Services.Models;
@@ -75,8 +74,7 @@ public abstract class GenericService<TEntity, TBusiness, TRequest, TResponse>
 
     public virtual async Task<PagedResult<TResponse>> GetAllAsync(PagedQuery query)
     {
-        var entities = await UnitOfWork.Repository<TEntity>().GetAllAsync();
-        var q = entities.AsQueryable();
+        var q = UnitOfWork.Repository<TEntity>().GetQueryable();
 
         // Search
         if (!string.IsNullOrWhiteSpace(query.Search))
@@ -94,15 +92,15 @@ public abstract class GenericService<TEntity, TBusiness, TRequest, TResponse>
         var ordered = q.ApplyMultiFieldSort(query.Sort, sortFields);
 
         // Count
-        var totalItems = ordered.Count();
+        var totalItems = await ordered.CountAsync();
 
         // Page
         var page = Math.Max(1, query.Page);
         var pageSize = Math.Clamp(query.PageSize, 1, 100);
-        var pagedEntities = ordered
+        var pagedEntities = await ordered
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .ToList();
+            .ToListAsync();
 
         // Map + field selection
         var items = pagedEntities
@@ -132,10 +130,13 @@ public abstract class GenericService<TEntity, TBusiness, TRequest, TResponse>
     {
         var includes = !string.IsNullOrWhiteSpace(expand)
             ? expand.Split(',', StringSplitOptions.TrimEntries)
-            : null;
-        var entity = await UnitOfWork.Repository<TEntity>().GetByIdAsync(id);
+            : Array.Empty<string>();
+        var q = UnitOfWork.Repository<TEntity>().GetQueryable();
+        if (includes.Length > 0)
+            q = ApplyExpand(q, includes);
+        var entity = await q.FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == id);
         if (entity == null) return null;
-        return MapToResponse(MapToBusiness(entity), includes ?? Array.Empty<string>());
+        return MapToResponse(MapToBusiness(entity), includes);
     }
 
     public virtual async Task<TResponse> AddAsync(TRequest request)

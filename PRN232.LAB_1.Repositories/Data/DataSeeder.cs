@@ -110,7 +110,7 @@ public static class DataSeeder
 
             foreach (var course in courses)
             {
-                var studentsForCourse = students.OrderBy(_ => random.Next()).Take(random.Next(15, 35)).ToList();
+                var studentsForCourse = students.OrderBy(_ => random.Next()).Take(25).ToList();
                 foreach (var student in studentsForCourse)
                 {
                     var status = statuses[random.Next(statuses.Length)];

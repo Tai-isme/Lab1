@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using PRN232.LAB_1.Repositories.Entities;
+using PRN232.LAB_1.Services.Helpers;
 using PRN232.LAB_1.Services.Interfaces;
 using PRN232.LAB_1.Services.Mappings;
 using PRN232.LAB_1.Services.Models;
@@ -46,6 +47,62 @@ public class CourseService
         if (expand.Contains("semester"))
             q = q.Include(e => e.Semester);
         return q;
+    }
+
+    // ── Override expand methods to use entity-level ToResponseDto ────────────
+
+    public override async Task<CourseResponse?> GetByIdAsync(int id, string? expand)
+    {
+        var includes = !string.IsNullOrWhiteSpace(expand)
+            ? expand.Split(',', StringSplitOptions.TrimEntries)
+            : Array.Empty<string>();
+        var q = UnitOfWork.Repository<Course>().GetQueryable();
+        if (includes.Length > 0)
+            q = ApplyExpand(q, includes);
+        var entity = await q.FirstOrDefaultAsync(e => e.Id == id);
+        if (entity == null) return null;
+        return entity.ToResponseDto(includes);
+    }
+
+    public override async Task<PagedResult<CourseResponse>> GetAllAsync(PagedQuery query)
+    {
+        var q = UnitOfWork.Repository<Course>().GetQueryable();
+
+        if (!string.IsNullOrWhiteSpace(query.Search))
+            q = ApplySearch(q, query.Search);
+
+        var expandArr = !string.IsNullOrWhiteSpace(query.Expand)
+            ? query.Expand.Split(',', StringSplitOptions.TrimEntries)
+            : Array.Empty<string>();
+        if (expandArr.Length > 0)
+            q = ApplyExpand(q, expandArr);
+
+        var sortFields = GetSortFields();
+        var ordered = q.ApplyMultiFieldSort(query.Sort, sortFields);
+
+        var totalItems = await ordered.CountAsync();
+
+        var page = Math.Max(1, query.Page);
+        var pageSize = Math.Clamp(query.PageSize, 1, 100);
+        var pagedEntities = await ordered
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        var items = pagedEntities
+            .Select(e => e.ToResponseDto(expandArr))
+            .ToList()
+            .ApplyFieldSelection(query.Fields)
+            .ToList();
+
+        return new PagedResult<CourseResponse>
+        {
+            Items = items,
+            Page = page,
+            PageSize = pageSize,
+            TotalItems = totalItems,
+            TotalPages = (int)Math.Ceiling(totalItems / (double)pageSize)
+        };
     }
 
     // ── Sort hook ─────────────────────────────────────────────────────────────

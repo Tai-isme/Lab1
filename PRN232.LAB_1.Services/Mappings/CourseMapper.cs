@@ -57,8 +57,6 @@ public static class CourseMapper
             Room = entity.Room,
             MaxStudents = entity.MaxStudents,
             Schedule = entity.Schedule,
-            Semester = entity.Semester?.ToBusinessModel(),
-            Subject = entity.Subject?.ToBusinessModel(),
             Enrollments = entity.Enrollments?.Select(e => e.ToBusinessModel()).ToList() ?? []
         };
     }

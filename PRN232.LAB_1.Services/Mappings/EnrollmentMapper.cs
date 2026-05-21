@@ -48,9 +48,7 @@ public static class EnrollmentMapper
             CourseId = entity.CourseId,
             EnrollmentDate = entity.EnrollmentDate,
             Status = entity.Status,
-            Grade = entity.Grade,
-            Student = entity.Student?.ToBusinessModel(),
-            Course = entity.Course?.ToBusinessModel()
+            Grade = entity.Grade
         };
     }
 
