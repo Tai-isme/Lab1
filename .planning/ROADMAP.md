@@ -167,10 +167,10 @@ Plans:
 
 ### Phase 12: WARNING: Swagger chỉ bật trong Development mode — Program.cs:30-34 — Swagger chỉ active khi app.Environment.IsDevelopment(). Trong Docker (ASPNETCORE_ENVIRONMENT=Docker) Swagger sẽ không bật. Nếu cần demo/test API trong Docker, cần thêm điều kiện IsDocker() hoặc bỏ check environment.
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal:** Enable Swagger UI and auto-migrations in Docker environment (ASPNETCORE_ENVIRONMENT=Docker) by combining IsDevelopment() with IsEnvironment("Docker") condition in Program.cs
+**Requirements:** API-17
 **Depends on:** Phase 11
-**Plans:** 0 plans
+**Plans:** 1/1 plans complete
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 12 to break down)
+- [x] 12-01-PLAN.md — Combine environment checks for Swagger and auto-migrations in Program.cs (API-17)
