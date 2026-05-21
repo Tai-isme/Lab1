@@ -24,37 +24,22 @@ public class Repository<T> : IRepository<T> where T : class
         return await _dbSet.FindAsync(id);
     }
 
-    public async Task<T?> GetByIdAsync(int id, string[]? includes)
+    public async Task<T> AddAsync(T entity)
     {
-        if (includes == null || includes.Length == 0)
-            return await _dbSet.FindAsync(id);
-
-        var query = _dbSet.AsQueryable();
-        foreach (var include in includes)
-        {
-            query = query.Include(include);
-        }
-        return await query.FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == id);
-    }
-
-    public T Add(T entity)
-    {
-        _dbSet.Add(entity);
+        await _dbSet.AddAsync(entity);
+        await _context.SaveChangesAsync();
         return entity;
     }
 
-    public void Update(T entity)
+    public async Task UpdateAsync(T entity)
     {
         _dbSet.Update(entity);
+        await _context.SaveChangesAsync();
     }
 
-    public void Delete(T entity)
+    public async Task DeleteAsync(T entity)
     {
         _dbSet.Remove(entity);
-    }
-
-    public IQueryable<T> GetQueryable()
-    {
-        return _dbSet.AsNoTracking().AsQueryable();
+        await _context.SaveChangesAsync();
     }
 }

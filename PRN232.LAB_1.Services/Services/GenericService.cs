@@ -75,7 +75,8 @@ public abstract class GenericService<TEntity, TBusiness, TRequest, TResponse>
 
     public virtual async Task<PagedResult<TResponse>> GetAllAsync(PagedQuery query)
     {
-        var q = UnitOfWork.Repository<TEntity>().GetQueryable();
+        var entities = await UnitOfWork.Repository<TEntity>().GetAllAsync();
+        var q = entities.AsQueryable();
 
         // Search
         if (!string.IsNullOrWhiteSpace(query.Search))
@@ -93,18 +94,18 @@ public abstract class GenericService<TEntity, TBusiness, TRequest, TResponse>
         var ordered = q.ApplyMultiFieldSort(query.Sort, sortFields);
 
         // Count
-        var totalItems = await ordered.CountAsync();
+        var totalItems = ordered.Count();
 
         // Page
         var page = Math.Max(1, query.Page);
         var pageSize = Math.Clamp(query.PageSize, 1, 100);
-        var entities = await ordered
+        var pagedEntities = ordered
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .ToListAsync();
+            .ToList();
 
         // Map + field selection
-        var items = entities
+        var items = pagedEntities
             .Select(e => MapToResponse(MapToBusiness(e), expandArr))
             .ToList()
             .ApplyFieldSelection(query.Fields)
@@ -132,7 +133,7 @@ public abstract class GenericService<TEntity, TBusiness, TRequest, TResponse>
         var includes = !string.IsNullOrWhiteSpace(expand)
             ? expand.Split(',', StringSplitOptions.TrimEntries)
             : null;
-        var entity = await UnitOfWork.Repository<TEntity>().GetByIdAsync(id, includes);
+        var entity = await UnitOfWork.Repository<TEntity>().GetByIdAsync(id);
         if (entity == null) return null;
         return MapToResponse(MapToBusiness(entity), includes ?? Array.Empty<string>());
     }
@@ -140,7 +141,7 @@ public abstract class GenericService<TEntity, TBusiness, TRequest, TResponse>
     public virtual async Task<TResponse> AddAsync(TRequest request)
     {
         var entity = MapToEntity(request);
-        var created = UnitOfWork.Repository<TEntity>().Add(entity);
+        var created = await UnitOfWork.Repository<TEntity>().AddAsync(entity);
         await UnitOfWork.SaveChangesAsync();
         return MapToResponse(MapToBusiness(created));
     }
@@ -150,7 +151,7 @@ public abstract class GenericService<TEntity, TBusiness, TRequest, TResponse>
         var entity = await UnitOfWork.Repository<TEntity>().GetByIdAsync(id);
         if (entity == null) return null;
         UpdateEntityFromRequest(request, entity);
-        UnitOfWork.Repository<TEntity>().Update(entity);
+        await UnitOfWork.Repository<TEntity>().UpdateAsync(entity);
         await UnitOfWork.SaveChangesAsync();
         return MapToResponse(MapToBusiness(entity));
     }
@@ -159,7 +160,7 @@ public abstract class GenericService<TEntity, TBusiness, TRequest, TResponse>
     {
         var entity = await UnitOfWork.Repository<TEntity>().GetByIdAsync(id);
         if (entity == null) return false;
-        UnitOfWork.Repository<TEntity>().Delete(entity);
+        await UnitOfWork.Repository<TEntity>().DeleteAsync(entity);
         await UnitOfWork.SaveChangesAsync();
         return true;
     }

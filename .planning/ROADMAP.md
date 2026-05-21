@@ -24,7 +24,7 @@ A 3-layer ASP.NET Core 8 REST API for Learning Management System (LMS) academic 
   4. DbContext registered with Scoped lifetime, DbSets for all entities, and model configurations applied
   5. Repository interfaces (`IRepository<T>`) and implementations exist per entity with full CRUD returning materialized collections; code-first migration generates correct database schema
 **Plans**: 1 plan
-- [ ] 01-PLAN.md — Create entities, Fluent API configs, DbContext, generic repository, DI wiring, and initial migration (DAT-01 through DAT-06)
+- [x] 01-PLAN.md — Create entities, Fluent API configs, DbContext, generic repository, DI wiring, and initial migration (DAT-01 through DAT-06)
 
 ### Phase 2: Business Logic — Services Layer
 **Goal**: Complete service layer with business/domain models, request/response DTOs, service interfaces and implementations, and model mapping between all four model types
@@ -72,7 +72,7 @@ A 3-layer ASP.NET Core 8 REST API for Learning Management System (LMS) academic 
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 1/1 | Complete | 2026-05-14 |
+| 1. Foundation | 1/1 | Complete   | 2026-05-21 |
 | 2. Business Logic | 2/2 | Complete | 2026-05-14 |
 | 3. API | 3/3 | Complete | 2026-05-14 |
 | 4. Deployment | 1/1 | Complete | 2026-05-16 |
@@ -81,6 +81,8 @@ A 3-layer ASP.NET Core 8 REST API for Learning Management System (LMS) academic 
 | 7. List API Fix | 2/2 | Complete | 2026-05-15 |
 | 8. Error Handling | 2/2 | Complete | 2026-05-16 |
 | 9. Unit of Work Pattern | 1/1 | Complete | 2026-05-20 |
+| 10. Generics | 2/2 | Complete | 2026-05-21 |
+| 11. Docker AppSettings | 0/1 | Planned | — |
 
 ### Phase 5: Fix project chưa đúng theo yêu cầu Business models được sử dụng đúng mục đích
 
@@ -139,3 +141,26 @@ Plans:
 **Plans**: 1 plan
 - [x] 09-01-PLAN.md — Refactor repository saving, implement UnitOfWork class and interface, register in DI, and refactor all 5 services to use IUnitOfWork (DAT-04, DAT-05, SVC-04, SVC-05)
 
+
+### Phase 10: Implement generics to LMS project
+
+**Goal:** Add generic service infrastructure (`IGenericService<TResponse, TRequest>` and `GenericService<TEntity, TBusiness, TRequest, TResponse>` abstract base) and refactor all 5 service interfaces and implementations to inherit from it. No controller changes.
+**Requirements**: D-01, D-02, D-03, D-04, D-05, D-06, D-07, D-08, D-09
+**Depends on:** Phase 9
+**Plans:** 2/2 plans complete
+
+Plans:
+- [x] 10-01-PLAN.md — Create IGenericService, GenericService abstract base, and Repository<TEntity>() in UnitOfWork
+- [x] 10-02-PLAN.md — Refactor all 5 service interfaces and implementations to inherit from GenericService
+
+**Completed:** 2026-05-21
+
+### Phase 11: Add appsettings.Docker.json
+
+**Goal:** Create `appsettings.Docker.json` in the API project with the Docker-specific connection string, and remove the redundant `ConnectionStrings__DefaultConnection` env var from `docker-compose.yml`. Makes ASP.NET Core's environment-based config loading the single source of truth for Docker config.
+**Requirements**: DCK-02
+**Depends on:** Phase 10
+**Plans:** 1 plan
+
+Plans:
+- [ ] 11-01-PLAN.md — Create appsettings.Docker.json, remove ConnectionStrings env var from docker-compose.yml
