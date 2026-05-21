@@ -18,8 +18,8 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// ── Auto-apply migrations in development ──
-if (app.Environment.IsDevelopment())
+// ── Auto-apply migrations in development and Docker ──
+if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Docker"))
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<LmsDbContext>();
@@ -27,7 +27,7 @@ if (app.Environment.IsDevelopment())
 }
 
 // ── Middleware pipeline ──
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Docker"))
 {
     app.UseSwagger();
     app.UseSwaggerUI();
