@@ -80,7 +80,10 @@ public static class SemesterMapper
 
     public static SemesterResponse ToResponseDto(this Semester entity, string[] expand)
     {
-        return entity.ToResponseDto(); // Semester has no forward nav to expand
+        var dto = entity.ToResponseDto();
+        if (expand.Contains("courses"))
+            dto.Courses = entity.Courses?.Select(c => c.ToResponseDto()).ToList() ?? [];
+        return dto;
     }
 
     public static SemesterResponse ToResponseDto(this SemesterBusiness model)
@@ -98,7 +101,10 @@ public static class SemesterMapper
 
     public static SemesterResponse ToResponseDto(this SemesterBusiness model, string[] expand)
     {
-        return model.ToResponseDto(); // Semester has no forward nav to expand
+        var dto = model.ToResponseDto();
+        if (expand.Contains("courses"))
+            dto.Courses = model.Courses.Select(c => c.ToResponseDto()).ToList();
+        return dto;
     }
 
     public static List<SemesterResponse> ToResponseDtoList(this IEnumerable<SemesterBusiness> models)

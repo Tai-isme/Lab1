@@ -86,7 +86,10 @@ public static class StudentMapper
 
     public static StudentResponse ToResponseDto(this Student entity, string[] expand)
     {
-        return entity.ToResponseDto(); // Student has no forward nav to expand
+        var dto = entity.ToResponseDto();
+        if (expand.Contains("enrollments"))
+            dto.Enrollments = entity.Enrollments?.Select(e => e.ToResponseDto()).ToList() ?? [];
+        return dto;
     }
 
     public static StudentResponse ToResponseDto(this StudentBusiness model)
@@ -105,7 +108,10 @@ public static class StudentMapper
 
     public static StudentResponse ToResponseDto(this StudentBusiness model, string[] expand)
     {
-        return model.ToResponseDto(); // Student has no forward nav to expand
+        var dto = model.ToResponseDto();
+        if (expand.Contains("enrollments"))
+            dto.Enrollments = model.Enrollments.Select(e => e.ToResponseDto()).ToList();
+        return dto;
     }
 
     public static List<StudentResponse> ToResponseDtoList(this IEnumerable<StudentBusiness> models)

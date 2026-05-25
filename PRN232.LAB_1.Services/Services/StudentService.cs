@@ -18,7 +18,7 @@ public class StudentService
         => entity.ToBusinessModel();
 
     protected override StudentResponse MapToResponse(StudentBusiness business, string[] expand)
-        => business.ToResponseDto();   // StudentBusiness carries all needed data; expand ignored at response level
+        => business.ToResponseDto(expand);
 
     protected override Student MapToEntity(StudentRequest request)
         => request.ToEntity();
@@ -58,4 +58,5 @@ public class StudentService
             { "fullname", (q => q.OrderBy(e => e.FullName), q => q.OrderByDescending(e => e.FullName)) },
             { "email",    (q => q.OrderBy(e => e.Email),    q => q.OrderByDescending(e => e.Email)) },
         };
+
 }

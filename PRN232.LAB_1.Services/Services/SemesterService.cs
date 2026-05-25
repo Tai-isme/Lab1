@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using PRN232.LAB_1.Repositories.Entities;
 using PRN232.LAB_1.Services.Interfaces;
 using PRN232.LAB_1.Services.Mappings;
@@ -17,7 +18,7 @@ public class SemesterService
         => entity.ToBusinessModel();
 
     protected override SemesterResponse MapToResponse(SemesterBusiness business, string[] expand)
-        => business.ToResponseDto();   // Semester has no navigation to expand
+        => business.ToResponseDto(expand);
 
     protected override Semester MapToEntity(SemesterRequest request)
         => request.ToEntity();
@@ -46,5 +47,10 @@ public class SemesterService
             { "enddate",   (q => q.OrderBy(e => e.EndDate),   q => q.OrderByDescending(e => e.EndDate)) },
         };
 
-    // ApplyExpand not overridden — Semester has no forward navigation properties
+    protected override IQueryable<Semester> ApplyExpand(IQueryable<Semester> q, string[] expand)
+    {
+        if (expand.Contains("courses"))
+            q = q.Include(e => e.Courses);
+        return q;
+    }
 }
